@@ -6,8 +6,8 @@
 
 		local version, build, date, tocversion = GetBuildInfo()
 
-		_detalhes.build_counter = 10029
-		_detalhes.alpha_build_counter = 10029 --if this is higher than the regular counter, use it instead
+		_detalhes.build_counter = 10030
+		_detalhes.alpha_build_counter = 10030 --if this is higher than the regular counter, use it instead
 		_detalhes.dont_open_news = true
 		_detalhes.game_version = version
 		_detalhes.userversion = version .. _detalhes.build_counter
@@ -18,7 +18,7 @@
 		_detalhes.BFACORE = 131 --core version on BFA launch
 		_detalhes.SHADOWLANDSCORE = 143 --core version on Shadowlands launch
 --
-		_detalhes.dragonflight_beta_version = 34
+		_detalhes.dragonflight_beta_version = 35
 
 		Details = _detalhes
 
