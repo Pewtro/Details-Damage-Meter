@@ -398,7 +398,7 @@ function Details:StartMeUp() --I'll never stop!
 
 	function Details:OpenOptionsWindowAtStart()
 		--Details:OpenOptionsWindow (Details.tabela_instancias[1])
-		--print (_G ["DetailsClearSegmentsButton1"]:GetSize())
+		--print(_G ["DetailsClearSegmentsButton1"]:GetSize())
 		--Details:OpenCustomDisplayWindow()
 		--Details:OpenWelcomeWindow()
 	end
@@ -492,7 +492,7 @@ function Details:StartMeUp() --I'll never stop!
 	if (not DetailsFramework.IsClassicWow()) then
 		--i'm not in classc wow
 	else
-		print ("|CFFFFFF00[Details!]: you're using Details! for RETAIL on Classic WOW, please get the classic version (Details! Damage Meter Classic WoW), if you need help see our Discord (/details discord).")
+		print("|CFFFFFF00[Details!]: you're using Details! for RETAIL on Classic WOW, please get the classic version (Details! Damage Meter Classic WoW), if you need help see our Discord (/details discord).")
 	end
 
 	Details:InstallHook("HOOK_DEATH", Details.Coach.Client.SendMyDeath)
@@ -571,6 +571,13 @@ function Details:StartMeUp() --I'll never stop!
 	--shutdown the old OnDeathMenu
 	--cleanup: this line can be removed after the first month of dragonflight
 	Details.on_death_menu = false
+
+	--reset to default the evoker color
+	local defaultEvokerColor = _detalhes.default_profile.class_colors.EVOKER
+	local currentEvokerColorTable = _detalhes.class_colors.EVOKER
+	currentEvokerColorTable[1] = defaultEvokerColor[1]
+	currentEvokerColorTable[2] = defaultEvokerColor[2]
+	currentEvokerColorTable[3] = defaultEvokerColor[3]
 end
 
 Details.AddOnLoadFilesTime = _G.GetTime()
