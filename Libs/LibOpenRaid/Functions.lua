@@ -179,11 +179,15 @@ local filterStringToCooldownType = {
     ["defensive-personal"] = CONST_COOLDOWN_TYPE_DEFENSIVE_PERSONAL,
     ["ofensive"] = CONST_COOLDOWN_TYPE_OFFENSIVE,
     ["utility"] = CONST_COOLDOWN_TYPE_UTILITY,
+<<<<<<< HEAD
     ["interrupt"] = CONST_COOLDOWN_TYPE_INTERRUPT,
     ["itemutil"] = CONST_COOLDOWN_TYPE_ITEMUTIL,
     ["itemheal"] = CONST_COOLDOWN_TYPE_ITEMHEAL,
     ["itempower"] = CONST_COOLDOWN_TYPE_ITEMPOWER,
     ["crowdcontrol"] = CONST_COOLDOWN_TYPE_CROWDCONTROL
+=======
+    ["interrupt"] = CONST_COOLDOWN_TYPE_INTERRUPT
+>>>>>>> 625e0dc4 (Update Libs and Locales Dec 2022)
 }
 
 local filterStringToCooldownTypeReverse = {
@@ -192,11 +196,15 @@ local filterStringToCooldownTypeReverse = {
     [CONST_COOLDOWN_TYPE_DEFENSIVE_PERSONAL] = "defensive-personal",
     [CONST_COOLDOWN_TYPE_OFFENSIVE] = "ofensive",
     [CONST_COOLDOWN_TYPE_UTILITY] = "utility",
+<<<<<<< HEAD
     [CONST_COOLDOWN_TYPE_INTERRUPT] = "interrupt",
     [CONST_COOLDOWN_TYPE_ITEMUTIL] = "itemutil",
     [CONST_COOLDOWN_TYPE_ITEMHEAL] = "itemheal",
     [CONST_COOLDOWN_TYPE_ITEMPOWER] = "itempower",
     [CONST_COOLDOWN_TYPE_CROWDCONTROL] = "crowdcontrol"
+=======
+    [CONST_COOLDOWN_TYPE_INTERRUPT] = "interrupt"
+>>>>>>> 625e0dc4 (Update Libs and Locales Dec 2022)
 }
 
 local removeSpellFromCustomFilterCache = function(spellId, filterName)
