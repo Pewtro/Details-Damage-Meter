@@ -2,8 +2,10 @@
     Dumping logical functions here, make the code of the main file smaller
 --]=]
 
+
+
 if (not LIB_OPEN_RAID_CAN_LOAD) then
-    return
+	return
 end
 
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
@@ -34,7 +36,7 @@ end
 --find the normalized percent of the value in the range. e.g range of 200-400 and a value of 250 result in 0.25
 --from details! framework
 function openRaidLib.GetRangePercent(minValue, maxValue, value)
-    return (value - minValue) / max((maxValue - minValue), 0.0000001)
+	return (value - minValue) / max((maxValue - minValue), 0.0000001)
 end
 
 --transform a table index into a string dividing values with a comma
@@ -84,8 +86,8 @@ end
 --stract some indexes of a table
 local selectIndexes = function(table, startIndex, amountIndexes, zeroIfNil)
     local values = {}
-    for i = startIndex, startIndex + amountIndexes do
-        values[#values + 1] = tonumber(table[i]) or (zeroIfNil and 0) or table[i]
+    for i = startIndex, startIndex+amountIndexes do
+        values[#values+1] = tonumber(table[i]) or (zeroIfNil and 0) or table[i]
     end
     return values
 end
@@ -102,19 +104,19 @@ function openRaidLib.UnpackTable(table, index, isPair, valueIsTable, amountOfVal
     if (not reservedIndexes) then
         return result
     end
-    local indexStart = index + 1
-    local indexEnd = reservedIndexes + index
+    local indexStart = index+1
+    local indexEnd = reservedIndexes+index
 
     if (isPair) then
         amountOfValues = amountOfValues or 2
         for i = indexStart, indexEnd, amountOfValues do
             if (valueIsTable) then
                 local key = tonumber(table[i])
-                local values = selectIndexes(table, i + 1, max(amountOfValues - 2, 1), true)
+                local values = selectIndexes(table, i+1, max(amountOfValues-2, 1), true)
                 result[key] = values
             else
                 local key = tonumber(table[i])
-                local value = tonumber(table[i + 1])
+                local value = tonumber(table[i+1])
                 result[key] = value
             end
         end
@@ -127,7 +129,7 @@ function openRaidLib.UnpackTable(table, index, isPair, valueIsTable, amountOfVal
         else
             for i = indexStart, indexEnd do
                 local value = tonumber(table[i])
-                result[#result + 1] = value
+                result[#result+1] = value
             end
         end
     end
@@ -146,16 +148,17 @@ function openRaidLib.UpdateUnitIDCache()
     openRaidLib.UnitIDCache = {}
     if (IsInRaid()) then
         for i = 1, GetNumGroupMembers() do
-            local unitName = GetUnitName("raid" .. i, true)
+            local unitName = GetUnitName("raid"..i, true)
             if (unitName) then
-                openRaidLib.UnitIDCache[unitName] = "raid" .. i
+                openRaidLib.UnitIDCache[unitName] = "raid"..i
             end
         end
+
     elseif (IsInGroup()) then
         for i = 1, GetNumGroupMembers() - 1 do
-            local unitName = GetUnitName("party" .. i, true)
+            local unitName = GetUnitName("party"..i, true)
             if (unitName) then
-                openRaidLib.UnitIDCache[unitName] = "party" .. i
+                openRaidLib.UnitIDCache[unitName] = "party"..i
             end
         end
     end
@@ -175,7 +178,7 @@ local filterStringToCooldownType = {
     ["defensive-personal"] = CONST_COOLDOWN_TYPE_DEFENSIVE_PERSONAL,
     ["ofensive"] = CONST_COOLDOWN_TYPE_OFFENSIVE,
     ["utility"] = CONST_COOLDOWN_TYPE_UTILITY,
-    ["interrupt"] = CONST_COOLDOWN_TYPE_INTERRUPT
+    ["interrupt"] = CONST_COOLDOWN_TYPE_INTERRUPT,
 }
 
 local filterStringToCooldownTypeReverse = {
@@ -184,7 +187,7 @@ local filterStringToCooldownTypeReverse = {
     [CONST_COOLDOWN_TYPE_DEFENSIVE_PERSONAL] = "defensive-personal",
     [CONST_COOLDOWN_TYPE_OFFENSIVE] = "ofensive",
     [CONST_COOLDOWN_TYPE_UTILITY] = "utility",
-    [CONST_COOLDOWN_TYPE_INTERRUPT] = "interrupt"
+    [CONST_COOLDOWN_TYPE_INTERRUPT] = "interrupt",
 }
 
 local removeSpellFromCustomFilterCache = function(spellId, filterName)
@@ -258,8 +261,9 @@ function openRaidLib.CooldownManager.DoesSpellPassFilters(spellId, filters)
             local cooldownType = filterStringToCooldownType[filter]
             --cooldown type is a number from 1 to 8 telling its type
             if (cooldownType == thisCooldownInfo.type) then
-                --check for custom filter, the custom filter name is set as a key in the cooldownInfo: cooldownInfo[filterName] = true
                 return true
+
+            --check for custom filter, the custom filter name is set as a key in the cooldownInfo: cooldownInfo[filterName] = true
             elseif (thisCooldownInfo[filter]) then
                 return true
             end
@@ -292,6 +296,7 @@ local getCooldownsForFilter = function(unitName, allCooldowns, unitDataFilteredC
             if (cooldownData) then
                 if (cooldownData.type == filterStringToCooldownType[filter]) then
                     filterTable[spellId] = cooldownInfo
+
                 elseif (cooldownData[filter]) then --custom filter
                     filterTable[spellId] = cooldownInfo
                 end
@@ -311,6 +316,7 @@ function openRaidLib.AddCooldownFilter(filterName, spells)
     if (type(filterName) ~= "string") then
         openRaidLib.DiagnosticError("Usage: openRaidLib.AddFilter(string: filterName, table: spells)", debugstack())
         return false
+
     elseif (type(spells) ~= "table") then
         openRaidLib.DiagnosticError("Usage: openRaidLib.AddFilter(string: filterName, table: spells)", debugstack())
         return false
@@ -333,11 +339,7 @@ function openRaidLib.AddCooldownFilter(filterName, spells)
             cooldownData[filterName] = true
             addSpellToCustomFilterCache(spellId, filterName)
         else
-            openRaidLib.DiagnosticError(
-                "A spellId on your spell list for openRaidLib.AddFilter isn't registered as cooldown:",
-                spellId,
-                debugstack()
-            )
+            openRaidLib.DiagnosticError("A spellId on your spell list for openRaidLib.AddFilter isn't registered as cooldown:", spellId, debugstack())
         end
     end
 
@@ -373,7 +375,7 @@ function openRaidLib.FilterCooldowns(unitName, allCooldowns, filters)
     for filter in filters:gmatch("([^,%s]+)") do
         local filterTable = getCooldownsForFilter(unitName, allCooldowns, unitDataFilteredCache, filter)
         if (filterTable) then
-            openRaidLib.TCopy(resultFilters, filterTable) --filter table is nil
+            openRaidLib.TCopy(resultFilters, filterTable)  --filter table is nil
         end
     end
 
@@ -472,21 +474,7 @@ function openRaidLib.GearManager.BuildEquipmentItemLinks(equippedGearList)
                     equipmentTable.itemId = itemId
                     equipmentTable.itemName = itemName
 
-                    local _,
-                        _,
-                        enchantId,
-                        gemId1,
-                        gemId2,
-                        gemId3,
-                        gemId4,
-                        suffixId,
-                        uniqueId,
-                        levelOfTheItem,
-                        specId,
-                        upgradeInfo,
-                        instanceDifficultyId,
-                        numBonusIds,
-                        restLink = strsplit(":", itemLink)
+                    local _, _, enchantId, gemId1, gemId2, gemId3, gemId4, suffixId, uniqueId, levelOfTheItem, specId, upgradeInfo, instanceDifficultyId, numBonusIds, restLink = strsplit(":", itemLink)
 
                     local enchantAttribute = LIB_OPEN_RAID_ENCHANT_SLOTS[slotId]
                     local nEnchantId = 0
