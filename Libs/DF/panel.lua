@@ -8279,7 +8279,7 @@ detailsFramework.CastFrameFunctions = {
 			--set the statusbar color
 			self:UpdateCastColor()
 
-			if (not self:IsShown() and not self.Settings.NoFadeEffects) then
+			if (not self:IsShown()) then
 				self:Animation_FadeIn()
 			end
 
@@ -8427,7 +8427,7 @@ detailsFramework.CastFrameFunctions = {
 			--set the statusbar color
 			self:UpdateCastColor()
 
-			if (not self:IsShown() and not self.Settings.NoFadeEffects) then
+			if (not self:IsShown()) then
 				self:Animation_FadeIn()
 			end
 

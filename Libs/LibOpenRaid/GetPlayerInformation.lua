@@ -3,8 +3,10 @@
     Dumping them here, make the code of the main file smaller
 --]=]
 
+
+
 if (not LIB_OPEN_RAID_CAN_LOAD) then
-    return
+	return
 end
 
 local openRaidLib = LibStub:GetLibrary("LibOpenRaid-1.0")
@@ -20,7 +22,7 @@ local CONST_SPELLBOOK_GENERAL_TABID = 1
 local CONST_ISITEM_BY_TYPEID = {
     [10] = true, --healing items
     [11] = true, --attack items
-    [12] = true --utility items
+    [12] = true, --utility items
 }
 
 local GetItemInfo = GetItemInfo
@@ -35,7 +37,7 @@ local isTimewalkWoW = function()
 end
 
 local IsDragonflight = function()
-    return select(4, GetBuildInfo()) >= 100000
+	return select(4, GetBuildInfo()) >= 100000
 end
 
 local IsShadowlands = function()
@@ -95,13 +97,15 @@ end
 
 local getDragonflightTalentsExportedString = function()
     local exportStream = ExportUtil.MakeExportDataStream()
-    local configId = C_ClassTalents.GetActiveConfigID()
+	local configId = C_ClassTalents.GetActiveConfigID()
     if (configId) then
         local configInfo = C_Traits.GetConfigInfo(configId)
-        local currentSpecID = PlayerUtil.GetCurrentSpecID()
+	    local currentSpecID = PlayerUtil.GetCurrentSpecID()
         local treeInfo = C_Traits.GetTreeInfo(configId, configInfo.treeIDs[1])
         local treeHash = C_Traits.GetTreeHash(treeInfo.ID)
         local serializationVersion = C_Traits.GetLoadoutSerializationVersion()
+
+        
     end
 end
 
@@ -135,7 +139,7 @@ local getDragonflightTalentsAsIndexTable = function()
                         local spellId = traitDefinitionInfo.overriddenSpellID or traitDefinitionInfo.spellID
                         local spellName, _, spellTexture = GetSpellInfo(spellId)
                         if (spellName) then
-                            allTalents[#allTalents + 1] = spellId
+                            allTalents[#allTalents+1] = spellId
                         end
                     end
                 end
@@ -157,6 +161,7 @@ function openRaidLib.UnitInfoManager.GetPlayerTalentsAsPairsTable()
             local spellId = allTalents[i]
             talentsPairs[spellId] = true
         end
+
     elseif (talentVersion == CONST_TALENT_VERSION_LEGION) then
         for i = 1, 7 do
             for o = 1, 3 do
@@ -178,6 +183,7 @@ function openRaidLib.UnitInfoManager.GetPlayerTalents()
 
     if (talentVersion == CONST_TALENT_VERSION_DRAGONFLIGHT) then
         talents = getDragonflightTalentsAsIndexTable()
+
     elseif (talentVersion == CONST_TALENT_VERSION_LEGION) then
         talents = {0, 0, 0, 0, 0, 0, 0}
         for talentTier = 1, 7 do
@@ -236,36 +242,31 @@ function openRaidLib.UnitInfoManager.GetPlayerConduits()
             local tree = soulbindData.tree
             local nodes = tree.nodes
 
-            table.sort(
-                nodes,
-                function(t1, t2)
-                    return t1.row < t2.row
-                end
-            )
+            table.sort(nodes, function(t1, t2) return t1.row < t2.row end)
             local C_Soulbinds_GetConduitCollectionData = C_Soulbinds.GetConduitCollectionData
             for nodeId, nodeInfo in ipairs(nodes) do
                 --check if the node is a conduit placed by the player
-
-                if (nodeInfo.state == Enum.SoulbindNodeState.Selected) then
+                
+                if (nodeInfo.state == Enum.SoulbindNodeState.Selected)  then
                     local conduitId = nodeInfo.conduitID
                     local conduitRank = nodeInfo.conduitRank
-
+                    
                     if (conduitId and conduitRank) then
                         --have spell id when it's a default conduit from the game
                         local spellId = nodeInfo.spellID
                         --have conduit id when is a conduid placed by the player
-                        local conduitId = nodeInfo.conduitID
-
+                        local conduitId  = nodeInfo.conduitID
+                        
                         if (spellId == 0) then
                             --is player conduit
                             spellId = C_Soulbinds.GetConduitSpellID(nodeInfo.conduitID, nodeInfo.conduitRank)
-                            conduits[#conduits + 1] = spellId
+                            conduits[#conduits+1] = spellId
                             local collectionData = C_Soulbinds_GetConduitCollectionData(conduitId)
-                            conduits[#conduits + 1] = collectionData and collectionData.conduitItemLevel or 0
+                            conduits[#conduits+1] = collectionData and collectionData.conduitItemLevel or 0         
                         else
                             --is default conduit
-                            conduits[#conduits + 1] = spellId
-                            conduits[#conduits + 1] = 0
+                            conduits[#conduits+1] = spellId
+                            conduits[#conduits+1] = 0
                         end
                     end
                 end
@@ -285,6 +286,7 @@ function openRaidLib.UnitInfoManager.GetPlayerBorrowedTalents()
 
     return {}
 end
+
 
 function openRaidLib.GearManager.GetPlayerItemLevel()
     if (_G.GetAverageItemLevel) then
@@ -329,10 +331,11 @@ function openRaidLib.GearManager.GetPlayerWeaponEnchant()
     local _, _, _, mainHandEnchantId, _, _, _, offHandEnchantId = GetWeaponEnchantInfo()
     if (LIB_OPEN_RAID_WEAPON_ENCHANT_IDS[mainHandEnchantId]) then
         weaponEnchant = 1
-    elseif (LIB_OPEN_RAID_WEAPON_ENCHANT_IDS[offHandEnchantId]) then
+
+    elseif(LIB_OPEN_RAID_WEAPON_ENCHANT_IDS[offHandEnchantId]) then
         weaponEnchant = 1
     end
-    return weaponEnchant, mainHandEnchantId or 0, offHandEnchantId or 0
+    return weaponEnchant
 end
 
 function openRaidLib.GearManager.GetPlayerGemsAndEnchantInfo()
@@ -347,61 +350,48 @@ function openRaidLib.GearManager.GetPlayerGemsAndEnchantInfo()
         local itemLink = GetInventoryItemLink("player", equipmentSlotId)
         if (itemLink) then
             --get the information from the item
-            local _,
-                itemId,
-                enchantId,
-                gemId1,
-                gemId2,
-                gemId3,
-                gemId4,
-                suffixId,
-                uniqueId,
-                levelOfTheItem,
-                specId,
-                upgradeInfo,
-                instanceDifficultyId,
-                numBonusIds,
-                restLink = strsplit(":", itemLink)
+            local _, itemId, enchantId, gemId1, gemId2, gemId3, gemId4, suffixId, uniqueId, levelOfTheItem, specId, upgradeInfo, instanceDifficultyId, numBonusIds, restLink = strsplit(":", itemLink)
             local gemsIds = {gemId1, gemId2, gemId3, gemId4}
 
             --enchant
-            --check if the slot can receive enchat and if the equipment has an enchant
-            local enchantAttribute = LIB_OPEN_RAID_ENCHANT_SLOTS[equipmentSlotId]
-            local nEnchantId = 0
+                --check if the slot can receive enchat and if the equipment has an enchant
+                local enchantAttribute = LIB_OPEN_RAID_ENCHANT_SLOTS[equipmentSlotId]
+                local nEnchantId = 0
 
-            if (enchantAttribute) then --this slot can receive an enchant
-                if (enchantId and enchantId ~= "") then
-                    local number = tonumber(enchantId)
-                    nEnchantId = number
-                    gearWithEnchantIds[#gearWithEnchantIds + 1] = nEnchantId
-                else
-                    gearWithEnchantIds[#gearWithEnchantIds + 1] = 0
-                end
+                if (enchantAttribute) then --this slot can receive an enchant
+                    if (enchantId and enchantId ~= "") then
+                        local number = tonumber(enchantId)
+                        nEnchantId = number
+                        gearWithEnchantIds[#gearWithEnchantIds+1] = nEnchantId
+                    else
+                        gearWithEnchantIds[#gearWithEnchantIds+1] = 0
+                    end
 
-                --6400 and above is dragonflight enchantId number space
-                if (nEnchantId < 6300 and not LIB_OPEN_RAID_DEATHKNIGHT_RUNEFORGING_ENCHANT_IDS[nEnchantId]) then
-                    slotsWithoutEnchant[#slotsWithoutEnchant + 1] = equipmentSlotId
-                end
-            end
-
-            --gems
-            local itemStatsTable = {}
-            --fill the table above with information about the item
-            GetItemStats(itemLink, itemStatsTable)
-
-            --check if the item has a socket
-            if (itemStatsTable.EMPTY_SOCKET_PRISMATIC) then
-                --check if the socket is empty
-                for i = 1, itemStatsTable.EMPTY_SOCKET_PRISMATIC do
-                    local gemId = tonumber(gemsIds[i])
-                    if (not gemId or gemId == 0) then
-                        --check if the gem is not a valid gem (deprecated gem)
-                        slotsWithoutGems[#slotsWithoutGems + 1] = equipmentSlotId
-                    elseif (gemId < 180000) then
-                        slotsWithoutGems[#slotsWithoutGems + 1] = equipmentSlotId
+                    --6400 and above is dragonflight enchantId number space
+                    if (nEnchantId < 6300 and not LIB_OPEN_RAID_DEATHKNIGHT_RUNEFORGING_ENCHANT_IDS[nEnchantId]) then
+                        slotsWithoutEnchant[#slotsWithoutEnchant+1] = equipmentSlotId
                     end
                 end
-            end
+
+            --gems
+                local itemStatsTable = {}
+                --fill the table above with information about the item
+                GetItemStats(itemLink, itemStatsTable)
+
+                --check if the item has a socket
+                if (itemStatsTable.EMPTY_SOCKET_PRISMATIC) then
+                    --check if the socket is empty
+                    for i = 1, itemStatsTable.EMPTY_SOCKET_PRISMATIC do
+                        local gemId = tonumber(gemsIds[i])
+                        if (not gemId or gemId == 0) then
+                            slotsWithoutGems[#slotsWithoutGems+1] = equipmentSlotId
+
+                        --check if the gem is not a valid gem (deprecated gem)
+                        elseif (gemId < 180000) then
+                            slotsWithoutGems[#slotsWithoutGems+1] = equipmentSlotId
+                        end
+                    end
+                end
         end
     end
 
@@ -415,33 +405,20 @@ function openRaidLib.GearManager.BuildPlayerEquipmentList()
         local itemLink = GetInventoryItemLink("player", equipmentSlotId)
         if (itemLink) then
             local itemStatsTable = {}
-            local itemID,
-                enchantID,
-                gemID1,
-                gemID2,
-                gemID3,
-                gemID4,
-                suffixID,
-                uniqueID,
-                linkLevel,
-                specializationID,
-                modifiersMask,
-                itemContext = select(2, strsplit(":", itemLink))
+            local itemID, enchantID, gemID1, gemID2, gemID3, gemID4, suffixID, uniqueID, linkLevel, specializationID, modifiersMask, itemContext = select(2, strsplit(":", itemLink))
             itemID = tonumber(itemID)
 
             local effectiveILvl, isPreview, baseILvl = GetDetailedItemLevelInfo(itemLink)
             if (not effectiveILvl) then
                 openRaidLib.mainControl.scheduleUpdatePlayerData()
                 effectiveILvl = 0
-                openRaidLib.__errors[#openRaidLib.__errors + 1] =
-                    "Fail to get Item Level: " ..
-                    (itemID or "invalid itemID") .. " " .. (itemLink and itemLink:gsub("|H", "") or "invalid itemLink")
+                openRaidLib.__errors[#openRaidLib.__errors+1] = "Fail to get Item Level: " .. (itemID or "invalid itemID") .. " " .. (itemLink and itemLink:gsub("|H", "") or "invalid itemLink")
             end
 
             GetItemStats(itemLink, itemStatsTable)
             local gemSlotsAvailable = itemStatsTable and itemStatsTable.EMPTY_SOCKET_PRISMATIC or 0
 
-            local noPrefixItemLink = itemLink:gsub("^|c%x%x%x%x%x%x%x%x|Hitem", "")
+            local noPrefixItemLink = itemLink : gsub("^|c%x%x%x%x%x%x%x%x|Hitem", "")
             local linkTable = {strsplit(":", noPrefixItemLink)}
             local numModifiers = linkTable[14]
             numModifiers = numModifiers and tonumber(numModifiers) or 0
@@ -452,7 +429,7 @@ function openRaidLib.GearManager.BuildPlayerEquipmentList()
 
             local newItemLink = table.concat(linkTable, ":")
             newItemLink = newItemLink
-            equipmentList[#equipmentList + 1] = {equipmentSlotId, gemSlotsAvailable, effectiveILvl, newItemLink}
+            equipmentList[#equipmentList+1] = {equipmentSlotId, gemSlotsAvailable, effectiveILvl, newItemLink}
 
             if (equipmentSlotId == 2) then
                 debug = {itemLink:gsub("|H", ""), newItemLink}
@@ -471,6 +448,7 @@ function openRaidLib.GearManager.BuildPlayerEquipmentList()
     table.insert(debug, str)
     dumpt(debug)
     --]]
+
     return equipmentList
 end
 
@@ -490,15 +468,14 @@ local playerHasPetOfNpcId = function(npcId)
 end
 
 local addCooldownToTable = function(cooldowns, cooldownsHash, cooldownSpellId, timeNow)
-    local timeLeft, charges, startTimeOffset, duration, auraDuration =
-        openRaidLib.CooldownManager.GetPlayerCooldownStatus(cooldownSpellId)
+    local timeLeft, charges, startTimeOffset, duration, auraDuration = openRaidLib.CooldownManager.GetPlayerCooldownStatus(cooldownSpellId)
 
-    cooldowns[#cooldowns + 1] = cooldownSpellId
-    cooldowns[#cooldowns + 1] = timeLeft
-    cooldowns[#cooldowns + 1] = charges
-    cooldowns[#cooldowns + 1] = startTimeOffset
-    cooldowns[#cooldowns + 1] = duration
-    cooldowns[#cooldowns + 1] = auraDuration
+    cooldowns[#cooldowns+1] = cooldownSpellId
+    cooldowns[#cooldowns+1] = timeLeft
+    cooldowns[#cooldowns+1] = charges
+    cooldowns[#cooldowns+1] = startTimeOffset
+    cooldowns[#cooldowns+1] = duration
+    cooldowns[#cooldowns+1] = auraDuration
 
     cooldownsHash[cooldownSpellId] = {timeLeft, charges, startTimeOffset, duration, timeNow, auraDuration}
 end
@@ -527,10 +504,7 @@ local getSpellListAsHashTableFromSpellBook = function()
     local tabEnd = offset + numSpells
     for entryOffset = offset, tabEnd - 1 do
         local spellType, spellId = GetSpellBookItemInfo(entryOffset, "player")
-        if
-            (spellId and LIB_OPEN_RAID_COOLDOWNS_INFO[spellId] and
-                LIB_OPEN_RAID_COOLDOWNS_INFO[spellId].raceid == playerRaceId)
-         then
+        if (spellId and LIB_OPEN_RAID_COOLDOWNS_INFO[spellId] and LIB_OPEN_RAID_COOLDOWNS_INFO[spellId].raceid == playerRaceId) then
             spellId = C_SpellBook.GetOverrideSpell(spellId)
             local spellName = GetSpellInfo(spellId)
             local bIsPassive = IsPassiveSpell(spellId, "player")
@@ -540,7 +514,7 @@ local getSpellListAsHashTableFromSpellBook = function()
         end
     end
 
-    --get spells from the Spec spellbook
+	--get spells from the Spec spellbook
     for i = 1, GetNumSpellTabs() do
         local tabName, tabTexture, offset, numSpells, isGuild, offspecId = GetSpellTabInfo(i)
         if (tabTexture == specIconTexture) then
@@ -567,8 +541,7 @@ local getSpellListAsHashTableFromSpellBook = function()
     end
 
     --get class shared spells from the spell book
-    local tabName, tabTexture, offset, numSpells, isGuild, offspecId =
-        GetSpellTabInfo(CONST_SPELLBOOK_CLASSSPELLS_TABID)
+    local tabName, tabTexture, offset, numSpells, isGuild, offspecId = GetSpellTabInfo(CONST_SPELLBOOK_CLASSSPELLS_TABID)
     offset = offset + 1
     local tabEnd = offset + numSpells
     for entryOffset = offset, tabEnd - 1 do
@@ -594,7 +567,7 @@ local getSpellListAsHashTableFromSpellBook = function()
         return HasPetSpells()
     end
 
-    --get pet spells from the pet spellbook
+    --get pet spells from the pet spellbook 
     local numPetSpells = getNumPetSpells()
     if (numPetSpells) then
         for i = 1, numPetSpells do
@@ -621,10 +594,7 @@ local updateCooldownAvailableList = function()
     --build a list of all spells assigned as cooldowns for the player class
     for spellID, spellData in pairs(LIB_OPEN_RAID_COOLDOWNS_INFO) do
         --type 10 is an item cooldown and does not have a class or raceid
-        if
-            (spellData.class == playerClass or spellData.raceid == playerRaceId or
-                CONST_ISITEM_BY_TYPEID[spellData.type])
-         then --need to implement here to get the racial as racial cooldowns does not carry a class
+        if (spellData.class == playerClass or spellData.raceid == playerRaceId or CONST_ISITEM_BY_TYPEID[spellData.type]) then --need to implement here to get the racial as racial cooldowns does not carry a class
             --type 10 is an item cooldown and does not have a spellbook entry
             if (spellBookSpellList[spellID] or CONST_ISITEM_BY_TYPEID[spellData.type]) then
                 LIB_OPEN_RAID_PLAYERCOOLDOWNS[spellID] = spellData
@@ -647,9 +617,7 @@ function openRaidLib.CooldownManager.GetPlayerCooldownList()
             --get the cooldowns for the specialization
             local playerCooldowns = LIB_OPEN_RAID_PLAYERCOOLDOWNS
             if (not playerCooldowns) then
-                openRaidLib.DiagnosticError(
-                    "CooldownManager|GetPlayerCooldownList|LIB_OPEN_RAID_PLAYERCOOLDOWNS is nil"
-                )
+                openRaidLib.DiagnosticError("CooldownManager|GetPlayerCooldownList|LIB_OPEN_RAID_PLAYERCOOLDOWNS is nil")
                 return {}, {}
             end
 
@@ -803,13 +771,13 @@ do
         end
     end
 
-    function openRaidLib.AuraTracker.ScanUnitAuras(unitId)
-        local batchCount = nil
-        local usePackedAura = true
+	function openRaidLib.AuraTracker.ScanUnitAuras(unitId)
+		local batchCount = nil
+		local usePackedAura = true
         openRaidLib.AuraTracker.CurrentUnitId = unitId
 
         openRaidLib.AuraTracker.AurasFoundOnScan = {}
-        AuraUtil.ForEachAura(unitId, "HELPFUL", batchCount, openRaidLib.AuraTracker.ScanCallback, usePackedAura)
+		AuraUtil.ForEachAura(unitId, "HELPFUL", batchCount, openRaidLib.AuraTracker.ScanCallback, usePackedAura)
 
         local thisUnitAuras = openRaidLib.AuraTracker.CurrentAuras[unitId]
         for spellId in pairs(thisUnitAuras) do
@@ -818,7 +786,7 @@ do
                 openRaidLib.internalCallback.TriggerEvent("unitAuraRemoved", unitId, spellId)
             end
         end
-    end
+	end
 
     --run when the open raid lib loads
     function openRaidLib.AuraTracker.StartScanUnitAuras(unitId)
@@ -829,12 +797,9 @@ do
         local auraFrameEvent = CreateFrame("frame")
         auraFrameEvent:RegisterUnitEvent("UNIT_AURA", unitId)
 
-        auraFrameEvent:SetScript(
-            "OnEvent",
-            function()
-                openRaidLib.AuraTracker.ScanUnitAuras(unitId)
-            end
-        )
+        auraFrameEvent:SetScript("OnEvent", function()
+            openRaidLib.AuraTracker.ScanUnitAuras(unitId)
+        end)
     end
 
     --test case:
@@ -844,75 +809,78 @@ do
         --print("aura removed:", unitId, spellId, spellName)
     end
     openRaidLib.internalCallback.RegisterCallback("unitAuraRemoved", debugModule.AuraRemoved)
+
 end
+
+
 
 --which is the main attribute of each spec
 --1 Intellect
 --2 Agility
 --3 Strenth
 openRaidLib.specAttribute = {
-    ["DEMONHUNTER"] = {
-        [577] = 2,
-        [581] = 2
-    },
-    ["DEATHKNIGHT"] = {
-        [250] = 3,
-        [251] = 3,
-        [252] = 3
-    },
-    ["WARRIOR"] = {
-        [71] = 3,
-        [72] = 3,
-        [73] = 3
-    },
-    ["MAGE"] = {
-        [62] = 1,
-        [63] = 1,
-        [64] = 1
-    },
-    ["ROGUE"] = {
-        [259] = 2,
-        [260] = 2,
-        [261] = 2
-    },
-    ["DRUID"] = {
-        [102] = 1,
-        [103] = 2,
-        [104] = 2,
-        [105] = 1
-    },
-    ["HUNTER"] = {
-        [253] = 2,
-        [254] = 2,
-        [255] = 2
-    },
-    ["SHAMAN"] = {
-        [262] = 1,
-        [263] = 2,
-        [264] = 1
-    },
-    ["PRIEST"] = {
-        [256] = 1,
-        [257] = 1,
-        [258] = 1
-    },
-    ["WARLOCK"] = {
-        [265] = 1,
-        [266] = 1,
-        [267] = 1
-    },
-    ["PALADIN"] = {
-        [65] = 1,
-        [66] = 3,
-        [70] = 3
-    },
-    ["MONK"] = {
-        [268] = 2,
-        [269] = 2,
-        [270] = 1
+	["DEMONHUNTER"] = {
+		[577] = 2,
+		[581] = 2,
+	},
+	["DEATHKNIGHT"] = {
+		[250] = 3,
+		[251] = 3,
+		[252] = 3,
+	},
+	["WARRIOR"] = {
+		[71] = 3,
+		[72] = 3,
+		[73] = 3,
+	},
+	["MAGE"] = {
+		[62] = 1,
+		[63] = 1,
+		[64] = 1,
+	},
+	["ROGUE"] = {
+		[259] = 2,
+		[260] = 2,
+		[261] = 2,
+	},
+	["DRUID"] = {
+		[102] = 1,
+		[103] = 2,
+		[104] = 2,
+		[105] = 1,
+	},
+	["HUNTER"] = {
+		[253] = 2,
+		[254] = 2,
+		[255] = 2,
+	},
+	["SHAMAN"] = {
+		[262] = 1,
+		[263] = 2,
+		[264] = 1,
+	},
+	["PRIEST"] = {
+		[256] = 1,
+		[257] = 1,
+		[258] = 1,
+	},
+	["WARLOCK"] = {
+		[265] = 1,
+		[266] = 1,
+		[267] =1 ,
+	},
+	["PALADIN"] = {
+		[65] = 1,
+		[66] = 3,
+		[70] = 3,
+	},
+	["MONK"] = {
+		[268] = 2,
+		[269] = 2,
+		[270] = 1,
     },
     ["EVOKER"] = {
         [1467] = 1, --Devastation
-        [1468] = 1 --Preservation
-    }
+        [1468] = 1, --Preservation
+    },
 }

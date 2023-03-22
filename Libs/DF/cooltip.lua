@@ -15,7 +15,7 @@ local max = math.max
 
 --api locals
 local PixelUtil = PixelUtil or DFPixelUtil
-local version = 17
+local version = 16
 
 local CONST_MENU_TYPE_MAINMENU = "main"
 local CONST_MENU_TYPE_SUBMENU = "sub"
@@ -70,6 +70,19 @@ function DF:CreateCoolTip()
 	gameCooltip.LanguageEditBox:SetFontObject("GameFontNormal")
 	gameCooltip.LanguageEditBox:ClearFocus()
 	gameCooltip.LanguageEditBox:SetAutoFocus(false)
+
+	function gameCooltip.CheckNeedNewFont(text)
+		--local file = gameCooltip.LanguageEditBox:GetFont()
+		--print("1", file, text)
+		--gameCooltip.LanguageEditBox:SetText("Цены аукциона")
+		--local file2 = gameCooltip.LanguageEditBox:GetFont()
+		--print("2", file2)
+		--gameCooltip.LanguageEditBox:ClearFocus()
+
+		--if (file ~= file2) then
+		--	gameCooltip:SetOption("TextFont", file2)
+		--end
+	end
 
 	--containers
 	gameCooltip.LeftTextTable = {}
@@ -159,8 +172,6 @@ function DF:CreateCoolTip()
 		["SparkColor"] = true,
 		["SparkPositionXOffset"] = true,
 		["SparkPositionYOffset"] = true,
-
-		["NoLanguageDetection"] = true,
 	}
 
 	gameCooltip.AliasList = {
@@ -591,7 +602,7 @@ function DF:CreateCoolTip()
 		statusbar.rightText = statusbar:CreateFontString("$parent_TextRight", "overlay", "GameFontNormal")
 		statusbar.rightText:SetJustifyH("RIGHT")
 		statusbar.rightText:SetPoint("RIGHT", statusbar.rightIcon, "LEFT", -3, 0)
-		DF:SetFontSize(statusbar.rightText, 10)
+		DF:SetFontSize(statusbar.leftText, 10)
 
 		--background status bar
 		self.statusbar2 = CreateFrame("StatusBar", "$Parent_StatusBarBackground", self)
@@ -929,20 +940,19 @@ function DF:CreateCoolTip()
 
 		--set text
 		if (leftTextSettings) then
-			--font language detection, can perform the detection if the font haven't been set by the user (usually by the options table)
-			if (not gameCooltip.OptionsTable.NoLanguageDetection and not gameCooltip.OptionsTable.TextFont) then
-				local languageId = DF.Language.DetectLanguageId(leftTextSettings[1])
-				if (languageId ~= menuButton.leftText.languageId) then
-					local newFont = DF.Language.GetFontForLanguageID(languageId)
-					DF:SetFontFace(menuButton.leftText, newFont)
-					menuButton.leftText.languageId = languageId
+			--font settings
+			local languageId = DF.Language.DetectLanguageId(leftTextSettings[1])
+			if (languageId ~= menuButton.leftText.languageId) then
+				local newFont = DF.Language.GetFontForLanguageID(languageId)
+				DF:SetFontFace(menuButton.leftText, newFont)
+				menuButton.leftText.languageId = languageId
 
-					local bIsLatinAlphabet = DF:IsLatinLanguage(languageId)
-					if (not bIsLatinAlphabet) then
-						menuButton.leftText.requiredFont = newFont
-					else
-						menuButton.leftText.requiredFont = nil
-					end
+				local bIsLatinAlphabet = DF:IsLatinLanguage(languageId)
+				if (not bIsLatinAlphabet) then
+					menuButton.leftText.requiredFont = newFont
+					gameCooltip.OptionsTable.TextFont = newFont
+				else
+					menuButton.leftText.requiredFont = nil
 				end
 			end
 
@@ -977,11 +987,7 @@ function DF:CreateCoolTip()
 				menuButton.leftText:SetHeight(0)
 			end
 
-			if (menuButton.leftText.requiredFont) then --the language detector require this font to be used
-				local _, size, flags = menuButton.leftText:GetFont()
-				menuButton.leftText:SetFont(menuButton.leftText.requiredFont, size, flags)
-
-			elseif (gameCooltip.OptionsTable.TextFont and not leftTextSettings[7]) then --font
+			if (gameCooltip.OptionsTable.TextFont and not leftTextSettings[7]) then --font
 				if (_G[gameCooltip.OptionsTable.TextFont]) then
 					menuButton.leftText:SetFontObject(_G.GameFontRed or gameCooltip.OptionsTable.TextFont)
 				else
@@ -989,7 +995,7 @@ function DF:CreateCoolTip()
 					local _, size, flags = menuButton.leftText:GetFont()
 					flags = leftTextSettings[8] or gameCooltip.OptionsTable.TextShadow or nil
 					size = leftTextSettings[6] or gameCooltip.OptionsTable.TextSize or size
-					menuButton.leftText:SetFont(font, size, flags)
+					menuButton.leftText:SetFont(menuButton.leftText.requiredFont or font, size, flags)
 				end
 
 			--font settings
@@ -1020,20 +1026,18 @@ function DF:CreateCoolTip()
 		end
 
 		if (rightTextSettings) then
-			--font language detection, can perform the detection if the font haven't been set by the user (usually by the options table)
-			if (not gameCooltip.OptionsTable.NoLanguageDetection and not gameCooltip.OptionsTable.TextFont) then
-				local languageId = DF.Language.DetectLanguageId(rightTextSettings[1])
-				if (languageId ~= menuButton.rightText.languageId) then
-					local newFont = DF.Language.GetFontForLanguageID(languageId)
-					DF:SetFontFace(menuButton.rightText, newFont)
-					menuButton.rightText.languageId = languageId
+			local languageId = DF.Language.DetectLanguageId(rightTextSettings[1])
+			if (languageId ~= menuButton.rightText.languageId) then
+				local newFont = DF.Language.GetFontForLanguageID(languageId)
+				DF:SetFontFace(menuButton.rightText, newFont)
+				menuButton.rightText.languageId = languageId
 
-					local bIsLatinAlphabet = DF:IsLatinLanguage(languageId)
-					if (not bIsLatinAlphabet) then
-						menuButton.rightText.requiredFont = newFont
-					else
-						menuButton.rightText.requiredFont = nil
-					end
+				local bIsLatinAlphabet = DF:IsLatinLanguage(languageId)
+				if (not bIsLatinAlphabet) then
+					menuButton.rightText.requiredFont = newFont
+					gameCooltip.OptionsTable.TextFont = newFont
+				else
+					menuButton.rightText.requiredFont = nil
 				end
 			end
 
@@ -1065,11 +1069,7 @@ function DF:CreateCoolTip()
 				menuButton.rightText:SetWidth(0)
 			end
 
-			if (menuButton.rightText.requiredFont) then --the language detector require this font to be used
-				local _, size, flags = menuButton.rightText:GetFont()
-				menuButton.rightText:SetFont(menuButton.rightText.requiredFont, size, flags)
-
-			elseif (gameCooltip.OptionsTable.TextFont and not rightTextSettings[7]) then
+			if (gameCooltip.OptionsTable.TextFont and not rightTextSettings[7]) then
 				if (_G[gameCooltip.OptionsTable.TextFont]) then
 					menuButton.rightText:SetFontObject(gameCooltip.OptionsTable.TextFont)
 				else
@@ -1077,7 +1077,7 @@ function DF:CreateCoolTip()
 					local _, fontSize, fontFlags = menuButton.rightText:GetFont()
 					fontFlags = rightTextSettings[8] or gameCooltip.OptionsTable.TextShadow or nil
 					fontSize = rightTextSettings[6] or gameCooltip.OptionsTable.TextSize or fontSize
-					menuButton.rightText:SetFont(fontFace, fontSize, fontFlags)
+					menuButton.rightText:SetFont(menuButton.leftText.requiredFont or fontFace, fontSize, fontFlags)
 				end
 
 			elseif (rightTextSettings[7]) then
@@ -3132,6 +3132,8 @@ function DF:CreateCoolTip()
 			end
 		end
 
+		gameCooltip.CheckNeedNewFont(leftText)
+
 		local rightTextType = type(rightText)
 		if (rightTextType ~= "string") then
 			if (rightTextType == "number") then
@@ -3140,6 +3142,8 @@ function DF:CreateCoolTip()
 				rightText = ""
 			end
 		end
+
+		gameCooltip.CheckNeedNewFont(rightText)
 
 		if (type(ColorR1) ~= "number") then
 			ColorR2, ColorG2, ColorB2, ColorA2, fontSize, fontFace, fontFlag = ColorG1, ColorB1, ColorA1, ColorR2, ColorG2, ColorB2, ColorA2
@@ -3598,7 +3602,7 @@ function DF:CreateCoolTip()
 		end
 
 		gameCooltip:SetOption("StatusBarTexture", [[Interface\WorldStateFrame\WORLDSTATEFINALSCORE-HIGHLIGHT]])
-		--self:SetOption("TextFont", DF.Language.GetFontForLanguageID(GetLocale()))
+		self:SetOption("TextFont", DF:GetBestFontForLanguage())
 		self:SetOption("TextColor", "orange")
 		self:SetOption("TextSize", 11)
 		self:SetOption("ButtonsYMod", -4)

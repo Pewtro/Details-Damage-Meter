@@ -134,12 +134,13 @@
 
 --]=]
 
+
 ---@class addonNamespaceTable : table store language settings for an addon
 ---@class fontPath : string font path for a font file on the hardware of the user
 
 local DF = _G["DetailsFramework"]
 if (not DF or not DetailsFrameworkCanLoad) then
-    return
+	return
 end
 
 local format = string.format
@@ -150,10 +151,10 @@ local CONST_LANGUAGEID_ENUS = "enUS"
 local gameLanguage = GetLocale()
 
 local addonNamespaceOptions = {
-    ChangeOnlyRegisteredFont = false
+    ChangeOnlyRegisteredFont = false,
 }
 local optionsHelp = {
-    ChangeOnlyRegisteredFont = "when changing the language, won't change the font if the font isn't registered for the language or region"
+    ChangeOnlyRegisteredFont = "when changing the language, won't change the font if the font isn't registered for the language or region",
 }
 
 local debugElabled = false
@@ -174,7 +175,7 @@ local supportedGameLanguages = {
     ["koKR"] = true,
     ["ruRU"] = true,
     ["zhCN"] = true,
-    ["zhTW"] = true
+    ["zhTW"] = true,
 }
 
 local fontLanguageCompatibility = {
@@ -188,7 +189,7 @@ local fontLanguageCompatibility = {
     ["zhCN"] = 2,
     ["zhTW"] = 3,
     ["koKR"] = 4,
-    ["ruRU"] = 5
+    ["ruRU"] = 5,
 }
 
 --this table contains all the registered languages with their name and fonts
@@ -205,12 +206,12 @@ local languagesAvailable = {
     koKR = {text = "한국어", font = [[Fonts\2002.TTF]]},
     ptBR = {text = "Português (BR)", font = "Fonts\\FRIZQT__.TTF"},
     ruRU = {text = "Русский", font = "Fonts\\FRIZQT___CYR.TTF"},
-    zhCN = {text = "简体中文", font = [[Fonts\ARHei.ttf]]},
-    zhTW = {text = "繁體中文", font = [[Fonts\ARHei.ttf]]}
+    zhCN = {text = "简体中文", font = [[Fonts\ARKai_T.ttf]]},
+    zhTW = {text = "繁體中文", font = [[Fonts\blei00d.TTF]]},
 }
 
 local ignoredCharacters = {}
-local punctuations = '.,;:!?-–—()[]{}\'"`/\\@_+*^%$#&~=<>|'
+local punctuations = ".,;:!?-–—()[]{}'\"`/\\@_+*^%$#&~=<>|"
 for character in punctuations:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
     ignoredCharacters[character] = true
 end
@@ -229,7 +230,6 @@ for character in latinAlphabet:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
     DF.LanguageKnowledge[character] = CONST_LANGUAGEID_ENUS
 end
 
---version 1:
 ---register the letters and symbols used on phrases
 ---@param languageId any
 ---@param languageTable any
@@ -238,50 +238,10 @@ local registerCharacters = function(languageId, languageTable)
         for character in textString:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
             if (not ignoredCharacters[character]) then
                 if (not DF.LanguageKnowledge[character]) then
-                    if (fontLanguageCompatibility[languageId] ~= 1) then
+                    if (fontLanguageCompatibility[languageId] == 1) then
+                        DF.LanguageKnowledge[character] = CONST_LANGUAGEID_ENUS
+                    else
                         DF.LanguageKnowledge[character] = languageId
-                    end
-                end
-            end
-        end
-    end
-end
-
----receives a character and attempt to get its byte code
----@param character string
----@return string, number
-local getByteCodeForCharacter = function(character)
-    local byteCode = ""
-    local amountOfBytes = 0
-    for symbolPiece in character:gmatch(".") do --separate each byte, can one, two or three bytes
-        byteCode = byteCode .. string.byte(symbolPiece)
-        amountOfBytes = amountOfBytes + 1
-    end
-    return byteCode, amountOfBytes
-end
-
----receives a character and attempt to get its byte code
----@param character string
----@return string
-local getQuickByteCodeForCharacter = function(character)
-    local byte1, byte2, byte3, byte4 = string.byte(character, 1, #character)
-    return (byte1 or "") .. "" .. (byte2 or "") .. "" .. (byte3 or "") .. "" .. (byte4 or "")
-end
-
---version 2:
----register the letters and symbols used on phrases
----@param languageId any
----@param languageTable any
-local registerCharacters = function(languageId, languageTable)
-    if (fontLanguageCompatibility[languageId] ~= 1) then
-        for stringId, textString in pairs(languageTable) do
-            for character in textString:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-                local byteCode, amountOfBytes = getByteCodeForCharacter(character)
-
-                --latin letters and escape sequences always use one byte per character
-                if (amountOfBytes >= 2) then --at least 2 bytes
-                    if (not DF.LanguageKnowledge[byteCode]) then
-                        DF.LanguageKnowledge[byteCode] = languageId
                     end
                 end
             end
@@ -296,13 +256,17 @@ local functionSignature = {
     ["SetFontByAlphabetOrRegion"] = "SetFontByAlphabetOrRegion(addonId, latin, cyrillic, china, korean, taiwan)",
     ["SetFontForLanguageId"] = "SetFontForLanguageId(addonId, languageId, fontPath)",
     ["GetText"] = "GetText(addonID, phraseID[, silent])",
+
     ["RegisterObject"] = "RegisterObject(addonID, object, phraseID[, silent[, ...]])",
     ["UpdateObjectArguments"] = "UpdateObjectArguments(addonID, object, ...)",
     ["RegisterTableKey"] = "RegisterTableKey(addonId, table, key, phraseId[[, silent[, ...]])",
     ["UpdateTableKeyArguments"] = "UpdateTableKeyArguments(addonId, table, key, ...)",
+
     ["RegisterObjectWithDefault"] = "RegisterObjectWithDefault(addonId, object, phraseId, defaultText[, ...])",
     ["RegisterTableKeyWithDefault"] = "RegisterTableKeyWithDefault(addonId, table, key, phraseId, defaultText[, ...])",
+
     ["SetOption"] = "SetOption(addonId, optionId, value)",
+
     ["CreateLocTable"] = "CreateLocTable(addonId, phraseId, shouldRegister[, silent[, ...]])",
     ["UnpackLocTable"] = "UnpackLocTable(locTable)",
     ["IsLocTable"] = "IsLocTable(locTable)",
@@ -312,7 +276,7 @@ local functionSignature = {
     ["SetTextWithLocTable"] = "SetTextWithLocTable(object, locTable)",
     ["SetTextWithLocTableWithDefault"] = "SetTextWithLocTableWithDefault(object, locTable, defaultText)",
     ["SetTextIfLocTableOrDefault"] = "SetTextIfLocTableOrDefault(object, locTable or string)",
-    ["CreateLanguageSelector"] = "DetailsFramework.Language.CreateLanguageSelector"
+    ["CreateLanguageSelector"] = "DetailsFramework.Language.CreateLanguageSelector",
 }
 
 local functionCallPath = {
@@ -322,13 +286,17 @@ local functionCallPath = {
     ["SetFontByAlphabetOrRegion"] = "DetailsFramework.Language.SetFontByAlphabetOrRegion",
     ["SetFontForLanguageId"] = "DetailsFramework.Language.SetFontForLanguageId",
     ["GetText"] = "DetailsFramework.Language.GetText",
+
     ["RegisterObject"] = "DetailsFramework.Language.RegisterObject",
     ["UpdateObjectArguments"] = "DetailsFramework.Language.UpdateObjectArguments",
     ["RegisterTableKey"] = "DetailsFramework.Language.RegisterTableKey",
     ["UpdateTableKeyArguments"] = "DetailsFramework.Language.UpdateTableKeyArguments",
+
     ["RegisterObjectWithDefault"] = "DetailsFramework.Language.RegisterObjectWithDefault",
     ["RegisterTableKeyWithDefault"] = "DetailsFramework.Language.RegisterTableKeyWithDefault",
+
     ["SetOption"] = "DetailsFramework.Language.SetOption",
+
     ["CreateLocTable"] = "DetailsFramework.Language.CreateLocTable",
     ["UnpackLocTable"] = "DetailsFramework.Language.UnpackLocTable",
     ["CanRegisterLocTable"] = "DetailsFramework.Language.CanRegisterLocTable",
@@ -338,7 +306,7 @@ local functionCallPath = {
     ["SetTextWithLocTableWithDefault"] = "DetailsFramework.Language.SetTextWithLocTableWithDefault",
     ["SetTextIfLocTableOrDefault"] = "DetailsFramework.Language.SetTextIfLocTableOrDefault",
     ["RegisterTableKeyWithLocTable"] = "DetailsFramework.Language.RegisterTableKeyWithLocTable",
-    ["CreateLanguageSelector"] = "CreateLanguageSelector(addonId, parent, callback, selectedLanguage)"
+    ["CreateLanguageSelector"] = "CreateLanguageSelector(addonId, parent, callback, selectedLanguage)",
 }
 
 local errorText = {
@@ -360,8 +328,9 @@ local errorText = {
     ["TableKeyAlreadyRegistered"] = "table already registered", --not in use
     ["InvalidLocTable"] = "invalid locTable on #%d argument",
     ["LocTableCantRegister"] = "cannot register object or tableKey, locTable.register == false",
-    ["InvalidOptionId"] = "invalid option on #%d argument"
+    ["InvalidOptionId"] = "invalid option on #%d argument",
 }
+
 
 --create language namespace
 DF.Language = DF.Language or {version = 1}
@@ -371,9 +340,10 @@ DF.Language.LanguageMixin = {
     SetAddonID = function(self, addonId)
         self.addonId = addonId
     end,
+
     GetAddonID = function(self, addonId)
         return self.addonId
-    end
+    end,
 }
 
 --internal functions
@@ -406,23 +376,28 @@ local isValid_Object = function(object)
     return true
 end
 
+
 --always create a new namespace if isn't registered yet
 local getOrCreateAddonNamespace = function(addonId, languageId)
     local addonNamespaceTable = DF.Language.RegisteredNamespaces[addonId]
     if (not addonNamespaceTable) then
         addonNamespaceTable = {
             addonId = addonId,
+
             --store registered functions to call when the language is changed
             callbacks = {},
+
             --by default, the current language is the first registered language
             currentLanguageId = languageId,
             languages = {},
             registeredObjects = {},
             tableKeys = setmetatable({}, {__mode = "k"}),
             fonts = {},
+
             --set when the first language table is registered
             defaultLanguageTable = false,
-            options = {}
+
+            options = {},
         }
 
         DF.table.copy(addonNamespaceTable.options, addonNamespaceOptions)
@@ -441,6 +416,7 @@ local getOrCreateAddonNamespace = function(addonId, languageId)
     return addonNamespaceTable
 end
 
+
 --just get the addon namespace returning nil if not registered yet
 local getAddonNamespace = function(addonId)
     return DF.Language.RegisteredNamespaces[addonId]
@@ -457,13 +433,7 @@ local triggerRegisteredCallbacksForAddonId = function(addonId)
     for i = 1, #callbacks do
         local callback = callbacks[i]
         --trigger a secure callback using xpcall
-        xpcall(
-            callback.callback,
-            _G["geterrorhandler"](),
-            addonId,
-            addonNamespaceTable.currentLanguageId,
-            unpack(callback.payload)
-        )
+        xpcall(callback.callback, _G["geterrorhandler"](), addonId, addonNamespaceTable.currentLanguageId, unpack(callback.payload))
     end
 end
 
@@ -494,17 +464,7 @@ local getCurrentLanguageId = function(addonNamespaceTable)
 end
 
 local setOption = function(addonNamespaceTable, optionId, value)
-    printDebug(
-        "setOption",
-        "addonId:",
-        addonNamespaceTable.addonId,
-        "optionId:",
-        optionId,
-        "value:",
-        value,
-        "valueType:",
-        type(value)
-    )
+    printDebug("setOption", "addonId:", addonNamespaceTable.addonId, "optionId:", optionId, "value:", value, "valueType:", type(value))
     addonNamespaceTable.options[optionId] = value
 end
 
@@ -580,51 +540,25 @@ end
 local setLanguageTableForLanguageId = function(addonNamespaceTable, languageId, languageTable)
     local isFirstLanguage = not next(addonNamespaceTable.languages)
     if (isFirstLanguage) then
-        printDebug(
-            "setLanguageTableForLanguageId",
-            "(first to be registered) addonId:",
-            addonNamespaceTable.addonId,
-            "languageId:",
-            languageId,
-            "languageTable:",
-            languageTable,
-            "languageIdType:",
-            type(languageId),
-            "languageTableType:",
-            type(languageTable)
-        )
+        printDebug("setLanguageTableForLanguageId", "(first to be registered) addonId:", addonNamespaceTable.addonId, "languageId:", languageId, "languageTable:", languageTable, "languageIdType:", type(languageId), "languageTableType:", type(languageTable))
         addonNamespaceTable.defaultLanguageTable = languageTable
     else
-        printDebug(
-            "setLanguageTableForLanguageId",
-            "addonId:",
-            addonNamespaceTable.addonId,
-            "languageId:",
-            languageId,
-            "languageTable:",
-            languageTable,
-            "languageIdType:",
-            type(languageId),
-            "languageTableType:",
-            type(languageTable)
-        )
+        printDebug("setLanguageTableForLanguageId", "addonId:", addonNamespaceTable.addonId, "languageId:", languageId, "languageTable:", languageTable, "languageIdType:", type(languageId), "languageTableType:", type(languageTable))
 
-        local defaultLanguageMetatable = {
-            __index = function(table, key)
-                local value = rawget(table, key)
-                if (value) then
-                    return value
-                end
-
-                local defaultLanguageTable = addonNamespaceTable.defaultLanguageTable
-                value = defaultLanguageTable[key]
-                if (value) then
-                    return value
-                end
-
-                return key
+        local defaultLanguageMetatable = {__index = function(table, key)
+            local value = rawget(table, key)
+            if (value) then
+                return value
             end
-        }
+
+            local defaultLanguageTable = addonNamespaceTable.defaultLanguageTable
+            value = defaultLanguageTable[key]
+            if (value) then
+                return value
+            end
+
+            return key
+        end}
 
         setmetatable(languageTable, defaultLanguageMetatable)
     end
@@ -634,28 +568,13 @@ local setLanguageTableForLanguageId = function(addonNamespaceTable, languageId, 
 end
 
 local setCurrentLanguageId = function(addonNamespaceTable, languageId)
-    printDebug(
-        "setCurrentLanguageId",
-        "addonId:",
-        addonNamespaceTable.addonId,
-        "languageId:",
-        languageId,
-        "languageIdType:",
-        type(languageId)
-    )
+    printDebug("setCurrentLanguageId", "addonId:", addonNamespaceTable.addonId, "languageId:", languageId, "languageIdType:", type(languageId))
 
     addonNamespaceTable.currentLanguageId = languageId
 
     local callbackFunc = getLanguageChangedCallback(addonNamespaceTable)
     if (callbackFunc) then
-        printDebug(
-            "setCurrentLanguageId",
-            "addonId:",
-            addonNamespaceTable.addonId,
-            "calling callback",
-            "callbackFuncType:",
-            type(callbackFunc)
-        )
+        printDebug("setCurrentLanguageId", "addonId:", addonNamespaceTable.addonId, "calling callback", "callbackFuncType:", type(callbackFunc))
         xpcall(callbackFunc, _G["geterrorhandler"](), languageId, addonNamespaceTable.addonId)
     end
 
@@ -748,8 +667,7 @@ end
 
 local setObject_Text = function(addonNamespaceTable, object, phraseInfoTable, text, textLanguageId)
     if (textLanguageId ~= object.__languageId) then
-        local bShouldChangeFont, fontPath =
-            shouldChangeFontForNewLanguage(addonNamespaceTable, object.__languageId, textLanguageId)
+        local bShouldChangeFont, fontPath = shouldChangeFontForNewLanguage(addonNamespaceTable, object.__languageId, textLanguageId)
         if (bShouldChangeFont) then
             if (object:GetObjectType() == "Button") then
                 local fontString = object:GetFontString()
@@ -936,7 +854,7 @@ function DF.Language.RegisterCallback(addonId, callback, ...)
         return false
     end
 
-    addonNamespaceTable.callbacks[#addonNamespaceTable.callbacks + 1] = {callback = callback, payload = {...}}
+    addonNamespaceTable.callbacks[#addonNamespaceTable.callbacks+1] = {callback = callback, payload = {...}}
     return true
 end
 
@@ -976,9 +894,8 @@ function DF.Language.DetectLanguageId(text)
         return "enUS"
     end
 
-    for character in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
-        local byteCode, amountOfBytes = getByteCodeForCharacter(character)
-        local languageId = DF.LanguageKnowledge[byteCode]
+    for letter in text:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+        local languageId = DF.LanguageKnowledge[letter]
         if (languageId) then
             return languageId
         end
@@ -1006,12 +923,9 @@ end
 ---@param addonId string
 ---@param key string
 ---@return boolean
-function DF.Language.DoesPhraseIDExistsInDefaultLanguage(addonId, key) --~DoesPhraseIDExistsInDefaultLanguage
+function DF.Language.DoesPhraseIDExistsInDefaultLanguage(addonId, key)  --~DoesPhraseIDExistsInDefaultLanguage
     if (not isValid_AddonID(addonId)) then
-        error(
-            "DoesPhraseIDExistsInDefaultLanguage() param #1 'addonId' must be a string or a table, got: " ..
-                type(addonId) .. "."
-        )
+        error("DoesPhraseIDExistsInDefaultLanguage() param #1 'addonId' must be a string or a table, got: " .. type(addonId) .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
@@ -1027,35 +941,26 @@ function DF.Language.DoesPhraseIDExistsInDefaultLanguage(addonId, key) --~DoesPh
     return rawget(defaultLanguageTable, key) and true
 end
 
+
 ---create a language table within an addon namespace
 ---if bIsNativeGameLanguage is true, languageName and languageFont are required
 ---@param addonId string an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 ---@param languageId string game languages: "deDE", "enUS", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU", "zhCN", "zhTW", or any other value if 'gameLanguageOnly' is false (default)
 ---@param bNotSupportedWoWLanguage boolean if true it indicates that this is not a native game language
 ---@return table: return a languageTable, this table holds translations for the registered language
-function DF.Language.RegisterLanguage(addonId, languageId, bNotSupportedWoWLanguage, languageName, languageFont) --~RegisterLanguage
+function DF.Language.RegisterLanguage(addonId, languageId, bNotSupportedWoWLanguage, languageName, languageFont)  --~RegisterLanguage
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["RegisterLanguage"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["RegisterLanguage"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
+
     elseif (not bNotSupportedWoWLanguage and not supportedGameLanguages[languageId]) then
-        error(
-            functionCallPath["RegisterLanguage"] ..
-                ": " .. format(errorText["LanguageID"], 2) .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["RegisterLanguage"] .. ": " .. format(errorText["LanguageID"], 2) .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
+
     elseif (bNotSupportedWoWLanguage) then
         if (not languageName) then
-            error(
-                functionCallPath["RegisterLanguage"] ..
-                    ": " .. "Invalid Language Name" .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-            )
+            error(functionCallPath["RegisterLanguage"] .. ": " .. "Invalid Language Name" .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
         end
         if (not languageFont) then
-            error(
-                functionCallPath["RegisterLanguage"] ..
-                    ": " .. "Invalid Language Font" .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-            )
+            error(functionCallPath["RegisterLanguage"] .. ": " .. "Invalid Language Font" .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
         end
 
         if (not supportedGameLanguages[languageId]) then
@@ -1078,39 +983,28 @@ function DF.Language.RegisterLanguage(addonId, languageId, bNotSupportedWoWLangu
 
     --after the language is registered, usualy comes the registration of phrases of the language registered
     --let the phrases be registered and after that register the characters and symbols used on that language
-    C_Timer.After(
-        0,
-        function()
-            registerCharacters(languageId, languageTable)
-        end
-    )
+    C_Timer.After(0, function()
+        registerCharacters(languageId, languageTable)
+    end)
 
     return languageTable
 end
 
+
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
---@optionId: the ID of the option, check
+--@optionId: the ID of the option, check 
 function DF.Language.SetOption(addonId, optionId, value)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["SetOption"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetOption"] .. "."
-        )
+        error(functionCallPath["SetOption"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetOption"] .. ".")
     end
 
     if (not addonNamespaceOptions[optionId]) then
-        error(
-            functionCallPath["SetOption"] ..
-                ": " .. format(errorText["InvalidOptionId"], 2) .. ", use: " .. functionSignature["SetOption"] .. "."
-        )
+        error(functionCallPath["SetOption"] .. ": " .. format(errorText["InvalidOptionId"], 2) .. ", use: " .. functionSignature["SetOption"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["SetOption"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetOption"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     setOption(addonNamespaceTable, optionId, value)
@@ -1123,64 +1017,42 @@ function DF.Language.ShowOptionsHelp()
     end
 end
 
+
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@languageId: game languages: "deDE", "enUS", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU", "zhCN", "zhTW", or any other string value to represent a language
 --@fontPath: a path for a font
 function DF.Language.SetFontForLanguageId(addonId, languageId, fontPath)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["SetFontForLanguageId"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetFontForLanguageId"] .. "."
-        )
+        error(functionCallPath["SetFontForLanguageId"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetFontForLanguageId"] .. ".")
     end
 
     if (not isValid_LanguageID(languageId)) then
-        error(
-            functionCallPath["SetFontForLanguageId"] ..
-                ": " ..
-                    format(errorText["LanguageIDInvalid"], 2) ..
-                        ", use: " .. functionSignature["SetFontForLanguageId"] .. "."
-        )
+        error(functionCallPath["SetFontForLanguageId"] .. ": " .. format(errorText["LanguageIDInvalid"], 2) .. ", use: " .. functionSignature["SetFontForLanguageId"] .. ".")
     end
 
     if (type(fontPath) ~= "string") then
-        error(
-            functionCallPath["SetFontForLanguageId"] ..
-                ": " ..
-                    format(errorText["FontPathInvalid"], 3) ..
-                        ", use: " .. functionSignature["SetFontForLanguageId"] .. "."
-        )
+        error(functionCallPath["SetFontForLanguageId"] .. ": " .. format(errorText["FontPathInvalid"], 3) .. ", use: " .. functionSignature["SetFontForLanguageId"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["SetFontForLanguageId"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetFontForLanguageId"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     setFontForLanguageId(addonNamespaceTable, languageId, fontPath)
 end
 
+
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@regions: accept a font name, ignored is nil is passed
 function DF.Language.SetFontByAlphabetOrRegion(addonId, latin, cyrillic, china, korean, taiwan)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["SetFontByAlphabetOrRegion"] ..
-                ": " ..
-                    format(errorText["AddonID"], 1) ..
-                        ", use: " .. functionSignature["SetFontByAlphabetOrRegion"] .. "."
-        )
+        error(functionCallPath["SetFontByAlphabetOrRegion"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetFontByAlphabetOrRegion"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["SetFontByAlphabetOrRegion"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetFontByAlphabetOrRegion"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     if (latin) then
@@ -1226,24 +1098,19 @@ function DF.Language.SetFontByAlphabetOrRegion(addonId, latin, cyrillic, china, 
     end
 end
 
+
 --get the languageTable for the requested languageId within the addon namespace
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@languageId: game languages: "deDE", "enUS", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU", "zhCN", "zhTW", or any other string value to represent a language if 'gameLanguageOnly' is false (default)
 --return value: languageTable
 function DF.Language.GetLanguageTable(addonId, languageId)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["GetLanguageTable"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["GetLanguageTable"] .. "."
-        )
+        error(functionCallPath["GetLanguageTable"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["GetLanguageTable"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["GetLanguageTable"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["GetLanguageTable"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     --if languageId was not been passed, use the current language
@@ -1253,15 +1120,12 @@ function DF.Language.GetLanguageTable(addonId, languageId)
 
     local languageTable = getLanguageTable(addonNamespaceTable, languageId)
     if (not languageTable) then
-        error(
-            functionCallPath["GetLanguageTable"] ..
-                ": " ..
-                    errorText["LanguageIDNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["GetLanguageTable"] .. ": " .. errorText["LanguageIDNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     return languageTable
 end
+
 
 --set the language used when retriving a languageTable with DF.Language.GetLanguageTable() without passing the second argument (languageId)
 --use this in combination with a savedVariable to use a language of the user choice
@@ -1269,27 +1133,17 @@ end
 --@languageId: game languages: "deDE", "enUS", "esES", "esMX", "frFR", "itIT", "koKR", "ptBR", "ruRU", "zhCN", "zhTW", or any other string value to represent a language if 'gameLanguageOnly' is false (default)
 function DF.Language.SetCurrentLanguage(addonId, newLanguageId)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["SetCurrentLanguage"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetCurrentLanguage"] .. "."
-        )
+        error(functionCallPath["SetCurrentLanguage"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["SetCurrentLanguage"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["SetCurrentLanguage"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetCurrentLanguage"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     local languageTable = getLanguageTable(addonNamespaceTable, newLanguageId)
     if (not languageTable) then
-        error(
-            functionCallPath["SetCurrentLanguage"] ..
-                ": " ..
-                    errorText["LanguageIDNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetCurrentLanguage"] .. ": " .. errorText["LanguageIDNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     setCurrentLanguageId(addonNamespaceTable, newLanguageId)
@@ -1300,28 +1154,21 @@ function DF.Language.SetCurrentLanguage(addonId, newLanguageId)
     return true
 end
 
+
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@phraseId: any string to identify the a translated text, example: phraseId: "OPTIONS_FRAME_WIDTH" text: "Adjust the Width of the frame."
 --@silent: if true won't error on invalid phrase text and instead use the phraseId as the text, it will still error on invalid addonId
 function DF.Language.GetText(addonId, phraseId, silent)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["GetText"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["GetText"] .. "."
-        )
+        error(functionCallPath["GetText"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["GetText"] .. ".")
+
     elseif (not isValid_PhraseID(phraseId)) then
-        error(
-            functionCallPath["GetText"] ..
-                ": " .. format(errorText["PhraseID"], 2) .. ", use: " .. functionSignature["GetText"] .. "."
-        )
+        error(functionCallPath["GetText"] .. ": " .. format(errorText["PhraseID"], 2) .. ", use: " .. functionSignature["GetText"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["GetText"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["GetText"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     local text, textLanguageId = getText(addonNamespaceTable, phraseId)
@@ -1330,16 +1177,12 @@ function DF.Language.GetText(addonId, phraseId, silent)
     end
 
     if (not silent) then
-        error(
-            functionCallPath["GetText"] ..
-                ": " ..
-                    errorText["PhraseIDNotRegistered"] ..
-                        ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'."
-        )
+        error(functionCallPath["GetText"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'.")
     end
 
     return phraseId
 end
+
 
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@object: any UIObject or table with SetText method
@@ -1348,32 +1191,20 @@ end
 --@vararg: arguments to pass for format(text, ...)
 function DF.Language.RegisterObject(addonId, object, phraseId, silent, ...)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["RegisterObject"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterObject"] .. "."
-        )
+        error(functionCallPath["RegisterObject"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterObject"] .. ".")
     end
 
     if (not isValid_PhraseID(phraseId)) then
-        error(
-            functionCallPath["RegisterObject"] ..
-                ": " .. format(errorText["PhraseID"], 3) .. ", use: " .. functionSignature["RegisterObject"] .. "."
-        )
+        error(functionCallPath["RegisterObject"] .. ": " .. format(errorText["PhraseID"], 3) .. ", use: " .. functionSignature["RegisterObject"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["RegisterObject"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["RegisterObject"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["RegisterObject"] ..
-                ": " .. format(errorText["InvalidObject"], 2) .. ", use: " .. functionSignature["RegisterObject"] .. "."
-        )
+        error(functionCallPath["RegisterObject"] .. ": " .. format(errorText["InvalidObject"], 2) .. ", use: " .. functionSignature["RegisterObject"] .. ".")
     end
 
     local objectTable = registerObject(addonNamespaceTable, object, phraseId, ...)
@@ -1389,12 +1220,7 @@ function DF.Language.RegisterObject(addonId, object, phraseId, silent, ...)
     local text, textLanguageId = getText(addonNamespaceTable, phraseId)
     if (not isValid_Text(text)) then
         if (not silent) then
-            error(
-                functionCallPath["RegisterObject"] ..
-                    ": " ..
-                        errorText["PhraseIDNotRegistered"] ..
-                            ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'."
-            )
+            error(functionCallPath["RegisterObject"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'.")
         else
             text = phraseId
         end
@@ -1404,41 +1230,27 @@ function DF.Language.RegisterObject(addonId, object, phraseId, silent, ...)
     return true
 end
 
+
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@object: any UIObject or table with SetText method
 --@vararg: arguments to pass for format(text, ...)
 function DF.Language.UpdateObjectArguments(addonId, object, ...)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["UpdateObjectArguments"] ..
-                ": " ..
-                    format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["UpdateObjectArguments"] .. "."
-        )
+        error(functionCallPath["UpdateObjectArguments"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["UpdateObjectArguments"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["UpdateObjectArguments"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["UpdateObjectArguments"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["UpdateObjectArguments"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 2) ..
-                        ", use: " .. functionSignature["UpdateObjectArguments"] .. "."
-        )
+        error(functionCallPath["UpdateObjectArguments"] .. ": " .. format(errorText["InvalidObject"], 2) .. ", use: " .. functionSignature["UpdateObjectArguments"] .. ".")
     end
 
     local phraseInfoTable = getObjectPhraseInfoTable(addonNamespaceTable, object)
     if (not phraseInfoTable) then
-        error(
-            functionCallPath["UpdateObjectArguments"] ..
-                ": " .. errorText["ObjectNotRegistered"] .. ", use: " .. functionSignature["RegisterObject"] .. "."
-        )
+        error(functionCallPath["UpdateObjectArguments"] .. ": " .. errorText["ObjectNotRegistered"] .. ", use: " .. functionSignature["RegisterObject"] .. ".")
     end
     updatePhraseInfo_Arguments(phraseInfoTable, ...)
 
@@ -1446,6 +1258,7 @@ function DF.Language.UpdateObjectArguments(addonId, object, ...)
     setObject_Text(addonNamespaceTable, object, phraseInfoTable, text, textLanguageId)
     return true
 end
+
 
 --@addonId: an identifier, can be any table or string, will be used when getting the table with phrase translations, example: "DetailsLocalization", "Details", "PlaterLoc", _G.Plater
 --@table: a lua table
@@ -1455,41 +1268,24 @@ end
 --@vararg: arguments to pass for format(text, ...)
 function DF.Language.RegisterTableKey(addonId, table, key, phraseId, silent, ...) --~RegisterTableKey
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["RegisterTableKey"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["RegisterTableKey"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     if (type(table) ~= "table") then
-        error(
-            functionCallPath["RegisterTableKey"] ..
-                ": " ..
-                    format(errorText["InvalidTable"], 2) .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["RegisterTableKey"] .. ": " .. format(errorText["InvalidTable"], 2) .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     if (key == nil or type(key) == "boolean") then
-        error(
-            functionCallPath["RegisterTableKey"] ..
-                ": " ..
-                    format(errorText["InvalidTableKey"], 3) .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["RegisterTableKey"] .. ": " .. format(errorText["InvalidTableKey"], 3) .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     if (not isValid_PhraseID(phraseId)) then
-        error(
-            functionCallPath["RegisterTableKey"] ..
-                ": " .. format(errorText["PhraseID"], 4) .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["RegisterTableKey"] .. ": " .. format(errorText["PhraseID"], 4) .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["RegisterTableKey"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["RegisterTableKey"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     local tableKeyTable = registerTableKey(addonNamespaceTable, table, key, phraseId, ...)
@@ -1497,15 +1293,7 @@ function DF.Language.RegisterTableKey(addonId, table, key, phraseId, silent, ...
     local text, textLanguageId = getText(addonNamespaceTable, phraseId)
     if (not isValid_Text(text)) then
         if (not silent) then
-            error(
-                functionCallPath["RegisterTableKey"] ..
-                    ": " ..
-                        errorText["PhraseIDNotRegistered"] ..
-                            ": " ..
-                                phraseId ..
-                                    ", use: " ..
-                                        functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'."
-            )
+            error(functionCallPath["RegisterTableKey"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ": " .. phraseId .. ", use: " .. functionSignature["GetLanguageTable"] .. "['PhraseID'] = 'translated text'.")
         else
             text = phraseId
         end
@@ -1521,53 +1309,30 @@ end
 --@vararg: arguments to pass for format(text, ...)
 function DF.Language.UpdateTableKeyArguments(addonId, table, key, ...)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " ..
-                    format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["UpdateTableKeyArguments"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["UpdateTableKeyArguments"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     if (type(table) ~= "table") then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " ..
-                    format(errorText["InvalidTable"], 2) ..
-                        ", use: " .. functionSignature["UpdateTableKeyArguments"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. format(errorText["InvalidTable"], 2) .. ", use: " .. functionSignature["UpdateTableKeyArguments"] .. ".")
     end
 
     if (key == nil or type(key) == "boolean") then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " ..
-                    format(errorText["InvalidTableKey"], 3) ..
-                        ", use: " .. functionSignature["UpdateTableKeyArguments"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. format(errorText["InvalidTableKey"], 3) .. ", use: " .. functionSignature["UpdateTableKeyArguments"] .. ".")
     end
 
     if (not isTableKeyRegistered(addonNamespaceTable, table)) then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " .. errorText["TableKeyNotRegistered"] .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. errorText["TableKeyNotRegistered"] .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     local tableKeyTable = getTableKeyTable(addonNamespaceTable, table) --can't nil as the line above checked if it exists
 
     if (not isKeyRegisteredInTableKey(tableKeyTable, key)) then
-        error(
-            functionCallPath["UpdateTableKeyArguments"] ..
-                ": " .. errorText["KeyNotRegistered"] .. ", use: " .. functionSignature["RegisterTableKey"] .. "."
-        )
+        error(functionCallPath["UpdateTableKeyArguments"] .. ": " .. errorText["KeyNotRegistered"] .. ", use: " .. functionSignature["RegisterTableKey"] .. ".")
     end
 
     local phraseInfo = getPhraseInfoFromTableKey(tableKeyTable, key) --can't nil as the line above checked if it exists
@@ -1578,6 +1343,7 @@ function DF.Language.UpdateTableKeyArguments(addonId, table, key, ...)
     return true
 end
 
+
 function DF.Language.RegisterTableKeyWithDefault(addonId, table, key, phraseId, defaultText, ...) --~RegisterTableKeyWithDefault
     if (addonId and phraseId) then
         DetailsFramework.Language.RegisterTableKey(addonId, table, key, phraseId, ...)
@@ -1586,14 +1352,10 @@ function DF.Language.RegisterTableKeyWithDefault(addonId, table, key, phraseId, 
     end
 end
 
+
 function DF.Language.RegisterObjectWithDefault(addonId, object, phraseId, defaultText, ...)
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["RegisterObjectWithDefault"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 2) ..
-                        ", use: " .. functionSignature["RegisterObjectWithDefault"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithDefault"] .. ": " .. format(errorText["InvalidObject"], 2) .. ", use: " .. functionSignature["RegisterObjectWithDefault"] .. ".")
     end
 
     if (phraseId) then
@@ -1603,37 +1365,25 @@ function DF.Language.RegisterObjectWithDefault(addonId, object, phraseId, defaul
     end
 end
 
+
 function DF.Language.CreateLocTable(addonId, phraseId, shouldRegister, silent, ...)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["CreateLocTable"] ..
-                ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["CreateLocTable"] .. "."
-        )
+        error(functionCallPath["CreateLocTable"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["CreateLocTable"] .. ".")
     end
 
     if (not isValid_PhraseID(phraseId)) then
-        error(
-            functionCallPath["CreateLocTable"] ..
-                ": " .. format(errorText["PhraseID"], 2) .. ", use: " .. functionSignature["CreateLocTable"] .. "."
-        )
+        error(functionCallPath["CreateLocTable"] .. ": " .. format(errorText["PhraseID"], 2) .. ", use: " .. functionSignature["CreateLocTable"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["CreateLocTable"] ..
-                ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["CreateLocTable"] .. "."
-        )
+        error(functionCallPath["CreateLocTable"] .. ": " .. errorText["NoLanguages"] .. ", use: " .. functionSignature["CreateLocTable"] .. ".")
     end
 
     local text, textLanguageId = getText(addonNamespaceTable, phraseId)
     if (not text) then
         if (not silent) then
-            error(
-                functionCallPath["CreateLocTable"] ..
-                    ": " ..
-                        errorText["PhraseIDNotRegistered"] .. ", use: " .. functionSignature["CreateLocTable"] .. "."
-            )
+            error(functionCallPath["CreateLocTable"] .. ": " .. errorText["PhraseIDNotRegistered"] .. ", use: " .. functionSignature["CreateLocTable"] .. ".")
         end
         return
     end
@@ -1646,7 +1396,7 @@ function DF.Language.CreateLocTable(addonId, phraseId, shouldRegister, silent, .
         addonId = addonId,
         phraseId = phraseId,
         shouldRegister = shouldRegister,
-        arguments = parseArguments(...)
+        arguments = parseArguments(...),
     }
 
     return newLocTable
@@ -1655,6 +1405,7 @@ end
 function DF.Language.IsLocTable(locTable)
     if (type(locTable) ~= "table") then
         return false
+
     elseif (locTable.addonId and locTable.phraseId) then
         return true
     end
@@ -1662,133 +1413,79 @@ function DF.Language.IsLocTable(locTable)
     return false
 end
 
+
 function DF.Language.CanRegisterLocTable(locTable)
     if (not DF.Language.IsLocTable(locTable)) then
-        error(
-            functionCallPath["CanRegisterLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidLocTable"], 1) ..
-                        ", use: " .. functionSignature["CanRegisterLocTable"] .. "."
-        )
+        error(functionCallPath["CanRegisterLocTable"] .. ": " .. format(errorText["InvalidLocTable"], 1) .. ", use: " .. functionSignature["CanRegisterLocTable"] .. ".")
     end
     return locTable.shouldRegister
 end
 
+
 function DF.Language.UnpackLocTable(locTable)
     if (type(locTable) ~= "table") then
-        error(
-            functionCallPath["UnpackLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidLocTable"], 1) .. ", use: " .. functionSignature["UnpackLocTable"] .. "."
-        )
+        error(functionCallPath["UnpackLocTable"] .. ": " .. format(errorText["InvalidLocTable"], 1) .. ", use: " .. functionSignature["UnpackLocTable"] .. ".")
     end
     return locTable.addonId, locTable.phraseId, locTable.shouldRegister or false, locTable.arguments
 end
 
+
 function DF.Language.RegisterTableKeyWithLocTable(table, key, locTable, silence)
     if (not DF.Language.IsLocTable(locTable)) then
-        error(
-            functionCallPath["RegisterTableKeyWithLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidLocTable"], 3) ..
-                        ", use: " .. functionSignature["RegisterTableKeyWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterTableKeyWithLocTable"] .. ": " .. format(errorText["InvalidLocTable"], 3) .. ", use: " .. functionSignature["RegisterTableKeyWithLocTable"] .. ".")
     end
 
     local addonId, phraseId, shouldRegister, arguments = DF.Language.UnpackLocTable(locTable)
 
     if (not shouldRegister) then
-        error(
-            functionCallPath["RegisterTableKeyWithLocTable"] ..
-                ": " ..
-                    errorText["LocTableCantRegister"] ..
-                        ", use: " .. functionSignature["RegisterTableKeyWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterTableKeyWithLocTable"] .. ": " .. errorText["LocTableCantRegister"] .. ", use: " .. functionSignature["RegisterTableKeyWithLocTable"] .. ".")
     end
 
     DF.Language.RegisterTableKey(addonId, table, key, phraseId, silence, arguments and unpack(arguments))
 end
 
+
 function DF.Language.RegisterObjectWithLocTable(object, locTable, silence)
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["RegisterObjectWithLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 1) ..
-                        ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithLocTable"] .. ": " .. format(errorText["InvalidObject"], 1) .. ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. ".")
     end
 
     if (not DF.Language.IsLocTable(locTable)) then
-        error(
-            functionCallPath["RegisterObjectWithLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidLocTable"], 2) ..
-                        ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithLocTable"] .. ": " .. format(errorText["InvalidLocTable"], 2) .. ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. ".")
     end
 
     local addonId, phraseId, shouldRegister, arguments = DF.Language.UnpackLocTable(locTable)
 
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["RegisterObjectWithLocTable"] ..
-                ": " ..
-                    format(errorText["AddonID"], 1) ..
-                        ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithLocTable"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. ".")
     end
 
     if (not isValid_PhraseID(phraseId)) then
-        error(
-            functionCallPath["RegisterObjectWithLocTable"] ..
-                ": " ..
-                    format(errorText["PhraseID"], 2) ..
-                        ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithLocTable"] .. ": " .. format(errorText["PhraseID"], 2) .. ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. ".")
     end
 
     if (not shouldRegister) then
-        error(
-            functionCallPath["RegisterObjectWithLocTable"] ..
-                ": " ..
-                    errorText["LocTableCantRegister"] ..
-                        ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. "."
-        )
+        error(functionCallPath["RegisterObjectWithLocTable"] .. ": " .. errorText["LocTableCantRegister"] .. ", use: " .. functionSignature["RegisterObjectWithLocTable"] .. ".")
     end
 
     DF.Language.RegisterObject(addonId, object, phraseId, silence, arguments and unpack(arguments))
 end
 
+
 function DF.Language.SetTextWithLocTable(object, locTable)
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["SetTextWithLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 1) ..
-                        ", use: " .. functionSignature["SetTextWithLocTable"] .. "."
-        )
+        error(functionCallPath["SetTextWithLocTable"] .. ": " .. format(errorText["InvalidObject"], 1) .. ", use: " .. functionSignature["SetTextWithLocTable"] .. ".")
     end
 
     if (not DF.Language.IsLocTable(locTable)) then
-        error(
-            functionCallPath["SetTextWithLocTable"] ..
-                ": " ..
-                    format(errorText["InvalidLocTable"], 2) ..
-                        ", use: " .. functionSignature["SetTextWithLocTable"] .. "."
-        )
+        error(functionCallPath["SetTextWithLocTable"] .. ": " .. format(errorText["InvalidLocTable"], 2) .. ", use: " .. functionSignature["SetTextWithLocTable"] .. ".")
     end
 
     local addonId, phraseId, shouldRegister, arguments = DF.Language.UnpackLocTable(locTable)
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["SetTextWithLocTable"] ..
-                ": " ..
-                    errorText["AddonIDInvalidOrNotRegistered"] ..
-                        ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["SetTextWithLocTable"] .. ": " .. errorText["AddonIDInvalidOrNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     if (DF.Language.CanRegisterLocTable(locTable)) then
@@ -1809,12 +1506,7 @@ end
 --@defaultText: a text string
 function DF.Language.SetTextWithLocTableWithDefault(object, locTable, defaultText)
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["SetTextWithLocTableWithDefault"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 1) ..
-                        ", use: " .. functionSignature["SetTextWithLocTableWithDefault"] .. "."
-        )
+        error(functionCallPath["SetTextWithLocTableWithDefault"] .. ": " .. format(errorText["InvalidObject"], 1) .. ", use: " .. functionSignature["SetTextWithLocTableWithDefault"] .. ".")
     end
 
     if (not DF.Language.IsLocTable(locTable)) then
@@ -1829,12 +1521,7 @@ end
 --@locTable: a locTable created from CreateLocTable()
 function DF.Language.SetTextIfLocTableOrDefault(object, locTable)
     if (not isValid_Object(object)) then
-        error(
-            functionCallPath["SetTextIfLocTableOrDefault"] ..
-                ": " ..
-                    format(errorText["InvalidObject"], 1) ..
-                        ", use: " .. functionSignature["SetTextIfLocTableOrDefault"] .. "."
-        )
+        error(functionCallPath["SetTextIfLocTableOrDefault"] .. ": " .. format(errorText["InvalidObject"], 1) .. ", use: " .. functionSignature["SetTextIfLocTableOrDefault"] .. ".")
     end
 
     if (not DF.Language.IsLocTable(locTable)) then
@@ -1851,30 +1538,16 @@ end
 --@selectedLanguage: default selected language
 function DF.Language.CreateLanguageSelector(addonId, parent, callback, selectedLanguage)
     if (not isValid_AddonID(addonId)) then
-        error(
-            functionCallPath["CreateLanguageSelector"] ..
-                ": " ..
-                    format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["CreateLanguageSelector"] .. "."
-        )
+        error(functionCallPath["CreateLanguageSelector"] .. ": " .. format(errorText["AddonID"], 1) .. ", use: " .. functionSignature["CreateLanguageSelector"] .. ".")
     end
 
     if (type(parent) ~= "table" or not parent.GetObjectType or not parent.CreateTexture) then
-        error(
-            functionCallPath["CreateLanguageSelector"] ..
-                ": " ..
-                    format("Require a frame on #%2 argument", 2) ..
-                        ", use: " .. functionSignature["CreateLanguageSelector"] .. "."
-        )
+        error(functionCallPath["CreateLanguageSelector"] .. ": " .. format("Require a frame on #%2 argument", 2) .. ", use: " .. functionSignature["CreateLanguageSelector"] .. ".")
     end
 
     local addonNamespaceTable = getAddonNamespace(addonId)
     if (not addonNamespaceTable) then
-        error(
-            functionCallPath["CreateLanguageSelector"] ..
-                ": " ..
-                    errorText["AddonIDInvalidOrNotRegistered"] ..
-                        ", use: " .. functionSignature["RegisterLanguage"] .. "."
-        )
+        error(functionCallPath["CreateLanguageSelector"] .. ": " .. errorText["AddonIDInvalidOrNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
     end
 
     setLanguageChangedCallback(addonNamespaceTable, callback)
@@ -1883,12 +1556,9 @@ function DF.Language.CreateLanguageSelector(addonId, parent, callback, selectedL
 
     local onSelectLanguage = function(self, addonId, languageId)
         DF.Language.SetCurrentLanguage(addonId, languageId)
-        C_Timer.After(
-            0.5,
-            function()
-                self:Select(languageId)
-            end
-        )
+        C_Timer.After(0.5, function()
+            self:Select(languageId)
+        end)
     end
 
     local buildOptionsFunc = function()
@@ -1896,36 +1566,22 @@ function DF.Language.CreateLanguageSelector(addonId, parent, callback, selectedL
 
         for languageId in pairs(allLanguagesRegistered) do
             local languageIdInfo = languagesAvailable[languageId]
-            resultTable[#resultTable + 1] = {
-                value = languageId,
-                label = languageIdInfo.text,
-                onclick = onSelectLanguage,
-                font = languageIdInfo.font
-            }
+            resultTable[#resultTable+1] = {value = languageId, label = languageIdInfo.text, onclick = onSelectLanguage, font = languageIdInfo.font}
         end
 
         return resultTable
     end
 
-    local languageSelector =
-        DF:CreateDropDown(
-        parent,
-        buildOptionsFunc,
-        selectedLanguage or getCurrentLanguageId(addonNamespaceTable),
-        120,
-        20,
-        nil,
-        nil,
-        DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE")
-    )
+    local languageSelector = DF:CreateDropDown(parent, buildOptionsFunc, selectedLanguage or getCurrentLanguageId(addonNamespaceTable), 120, 20, nil, nil, DF:GetTemplate("dropdown", "OPTIONS_DROPDOWN_TEMPLATE"))
     languageSelector:SetAddonID(addonId)
     languageSelector:SetFixedParameter(addonId)
 
-    local languageLabel = DF:CreateLabel(parent, _G.LANGUAGE .. ":", 10, "silver")
+    local languageLabel = DF:CreateLabel(parent, _G.LANGUAGE  .. ":", 10, "silver")
     languageLabel:SetPoint("right", languageSelector, "left", -3, 0)
 
     return languageSelector
 end
+
 
 ---return a font (path for a file) which works for the languageId passed, if the languageId is not registered, it'll return a compatible font registered by another addon or the default font
 ---@param languageId string
@@ -1936,12 +1592,7 @@ function DF.Language.GetFontForLanguageID(languageId, addonId)
         ---@type addonNamespaceTable
         local addonNamespaceTable = getAddonNamespace(addonId)
         if (not addonNamespaceTable) then
-            error(
-                functionCallPath["CreateLanguageSelector"] ..
-                    ": " ..
-                        errorText["AddonIDInvalidOrNotRegistered"] ..
-                            ", use: " .. functionSignature["RegisterLanguage"] .. "."
-            )
+            error(functionCallPath["CreateLanguageSelector"] .. ": " .. errorText["AddonIDInvalidOrNotRegistered"] .. ", use: " .. functionSignature["RegisterLanguage"] .. ".")
         end
 
         --get the font from the addon namespace table
