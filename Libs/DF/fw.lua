@@ -1,6 +1,6 @@
 
 
-local dversion = 423
+local dversion = 421
 local major, minor = "DetailsFramework-1.0", dversion
 local DF, oldminor = LibStub:NewLibrary(major, minor)
 
@@ -827,34 +827,35 @@ end
 ---@param value number
 ---@return string
 function DF:IntegerToTimer(value) --~formattime
-	return "" .. math.floor(value/60) .. ":" .. string.format("%02.f", value%60)
+	return "" .. floor(value/60) .. ":" .. format("%02.f", value%60)
 end
 
 ---remove the realm name from a name
 ---@param name string
----@return string, number
+---@return string
 function DF:RemoveRealmName(name)
 	return name:gsub(("%-.*"), "")
 end
 
 ---remove the realm name from a name
 ---@param name string
----@return string, number
+---@return string
 function DF:RemoveRealName(name)
 	return name:gsub(("%-.*"), "")
 end
 
 ---get the UIObject of type 'FontString' named fontString and set the font size to the maximum value of the arguments
----@param fontString fontstring
+---@param fontString FontString
 ---@vararg number
 function DF:SetFontSize(fontString, ...)
 	local font, _, flags = fontString:GetFont()
-	fontString:SetFont(font, math.max(...), flags)
+	fontString:SetFont(font, max(...), flags)
 end
 
 ---get the UIObject of type 'FontString' named fontString and set the font to the argument fontface
----@param fontString fontstring
+---@param fontString FontString
 ---@param fontface string
+---@return nil
 function DF:SetFontFace(fontString, fontface)
 	local font = SharedMedia:Fetch("font", fontface, true)
 	if (font) then
@@ -866,24 +867,26 @@ function DF:SetFontFace(fontString, fontface)
 end
 
 ---get the FontString passed and set the font color
----@param fontString fontstring
+---@param fontString FontString
 ---@param r any
 ---@param g number|nil
 ---@param b number|nil
 ---@param a number|nil
+---@return nil
 function DF:SetFontColor(fontString, r, g, b, a)
 	r, g, b, a = DF:ParseColors(r, g, b, a)
 	fontString:SetTextColor(r, g, b, a)
 end
 
 ---get the FontString passed and set the font shadow color and offset
----@param fontString fontstring
+---@param fontString FontString
 ---@param r number
 ---@param g number
 ---@param b number
 ---@param a number
 ---@param x number
 ---@param y number
+---@return nil
 function DF:SetFontShadow(fontString, r, g, b, a, x, y)
 	r, g, b, a = DF:ParseColors(r, g, b, a)
 	fontString:SetShadowColor(r, g, b, a)
@@ -896,8 +899,9 @@ function DF:SetFontShadow(fontString, r, g, b, a, x, y)
 end
 
 ---get the FontString object passed and set the rotation of the text shown
----@param fontString fontstring
+---@param fontString FontString
 ---@param degrees number
+---@return nil
 function DF:SetFontRotation(fontString, degrees)
 	if (type(degrees) == "number") then
 		if (not fontString.__rotationAnimation) then
@@ -3339,11 +3343,8 @@ function DF:OpenInterfaceProfile()
 end
 
 -----------------------------
----copy all members from #2 ... to #1 object
----@param object table
----@param ... any
----@return any
-function DF:Mixin(object, ...) --safe copy from blizz api
+--safe copy from blizz api
+function DF:Mixin(object, ...)
 	for i = 1, select("#", ...) do
 		local mixin = select(i, ...)
 		for key, value in pairs(mixin) do
