@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --global name declaration
 --local _StartDebugTime = debugprofilestop() print(debugprofilestop() - _StartDebugTime)
---test if the packager will deploy to wago
 --https://github.com/LuaLS/lua-language-server/wiki/Annotations#documenting-types
+--updated the lib open raid for v11
 
 		_ = nil
 		_G.Details = LibStub("AceAddon-3.0"):NewAddon("_detalhes", "AceTimer-3.0", "AceComm-3.0", "AceSerializer-3.0", "NickTag-1.0")
@@ -18,8 +18,8 @@
 		local addonName, Details222 = ...
 		local version, build, date, tocversion = GetBuildInfo()
 
-		Details.build_counter = 12755
-		Details.alpha_build_counter = 12755 --if this is higher than the regular counter, use it instead
+		Details.build_counter = 12801
+		Details.alpha_build_counter = 12801 --if this is higher than the regular counter, use it instead
 		Details.dont_open_news = true
 		Details.game_version = version
 		Details.userversion = version .. " " .. Details.build_counter
@@ -172,6 +172,17 @@
 		--aura scanner
 		Details222.AuraScan = {}
 
+        local GetSpellInfo = GetSpellInfo or C_Spell.GetSpellInfo
+        Details222.GetSpellInfo = GetSpellInfo
+        if (DetailsFramework.IsWarWow()) then
+            Details222.GetSpellInfo = function(...)
+                local result = GetSpellInfo(...)
+                if result then
+                    return result.name, 1, result.iconID
+                end
+            end
+        end
+
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --initialization stuff
 local _
@@ -183,6 +194,15 @@ do
 	local Loc = _G.LibStub("AceLocale-3.0"):GetLocale("Details")
 
 	local news = {
+		{"v10.2.7.12800.156", "June 06th, 2024"},
+		"Added transliteration for pet names in Cyrillic.",
+		"Fixed an error with extra power bars (alternate power) on cataclysm classic.",
+		"Fixed a rare error shown as 'combat already deleted' when trying to reset data.",
+		"Fixed an issue which was preventing to open the death recap window.",
+		"Fixed cataclysm classic attempting to calculate Evoker buffs.",
+		"Fixed battleground problems with cataclysm classic. (Flamanis)",
+		"Fixed an issue with player nicknames not showing properly when the player isn't inside a guild. (Flamanis)",
+
 		{"v10.2.7.12755.156", "May 19th, 2024"},
 		"Pet names on tooltips are now transliterate from Cyrillic.",
 		"Default segments amount are now 25 and save 15, users with different amount set won't have their settings changed.",
