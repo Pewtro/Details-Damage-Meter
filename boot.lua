@@ -174,6 +174,13 @@
 
         local GetSpellInfo = GetSpellInfo or C_Spell.GetSpellInfo
         Details222.GetSpellInfo = GetSpellInfo
+
+		local UnitBuff = UnitBuff or C_UnitAuras.GetBuffDataByIndex
+		Details222.UnitBuff = UnitBuff
+
+		local UnitDebuff = UnitDebuff or C_UnitAuras.GetDebuffDataByIndex
+		Details222.UnitDebuff = UnitDebuff
+
         if (DetailsFramework.IsWarWow()) then
             Details222.GetSpellInfo = function(...)
                 local result = GetSpellInfo(...)
@@ -181,7 +188,24 @@
                     return result.name, 1, result.iconID
                 end
             end
+
+			Details222.UnitBuff = function(unitToken, index, filter)
+				local auraData = C_UnitAuras.GetBuffDataByIndex(unitToken, index, filter)
+				if (not auraData) then
+					return nil
+				end
+				return AuraUtil.UnpackAuraData(auraData)
+			end
+
+			Details222.UnitDebuff = function(unitToken, index, filter)
+				local auraData = C_UnitAuras.GetDebuffDataByIndex(unitToken, index, filter)
+				if (not auraData) then
+					return nil
+				end
+				return AuraUtil.UnpackAuraData(auraData)
+			end
         end
+
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --initialization stuff
@@ -1782,3 +1806,36 @@ function Details:DestroyActor(actorObject, actorContainer, combatObject, callSta
 	actorObject.__destroyed = true
 	actorObject.__destroyedBy = debugstack(callStackDepth or 2, 1, 0)
 end
+
+local restrictedAddons = {
+    '!!WWAddOnsFix',
+}
+
+local restrictedAddonFrame = CreateFrame('frame')
+restrictedAddonFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
+
+local function disableRestrictedAddons()
+    for _, addonName in pairs(restrictedAddons) do
+        if C_AddOns.GetAddOnEnableState(addonName) ~= 0 then
+            StaticPopupDialogs["DETAILS_RESTRICTED_ADDON"] = {
+                text = "You are running " .. addonName .. " which is incompatible with Details! Damage Meter. It must be disabled for Details to function properly.",
+                button1 = "Disable " .. addonName,
+                button2 = "Disable Details!",
+                OnAccept = function()
+                    C_AddOns.DisableAddOn(addonName)
+                    ReloadUI()
+                 end,
+                OnCancel = function()
+                    C_AddOns.DisableAddOn('Details')
+                    ReloadUI()
+                end,
+                timeout = 0,
+                whileDead = true,
+            }
+            StaticPopup_Show("DETAILS_RESTRICTED_ADDON")
+            break
+        end
+    end
+end
+
+restrictedAddonFrame:SetScript('OnEvent', function() C_Timer.After(2, disableRestrictedAddons) end )
