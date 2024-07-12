@@ -19,8 +19,8 @@
 		local addonName, Details222 = ...
 		local version, build, date, tvs = GetBuildInfo()
 
-		Details.build_counter = 12801
-		Details.alpha_build_counter = 12801 --if this is higher than the regular counter, use it instead
+		Details.build_counter = 12804
+		Details.alpha_build_counter = 12804 --if this is higher than the regular counter, use it instead
 		Details.dont_open_news = true
 		Details.game_version = version
 		Details.userversion = version .. " " .. Details.build_counter
@@ -115,8 +115,10 @@
 		---@type details_storage_feature
 		---@diagnostic disable-next-line: missing-fields
 		local storage = {
-			DiffNames = {"normal", "heroic", "mythic"},
-			DiffNamesHash = {normal = 14, heroic = 15, mythic = 16},
+			DiffNames = {"normal", "heroic", "mythic", "raidfinder"},
+			DiffNamesHash = {normal = 14, heroic = 15, mythic = 16, raidfinder = 17},
+			DiffIdToName = {[14] = "normal", [15] = "heroic", [16] = "mythic", [17] = "raidfinder"},
+			IsDebug = false
 		}
 		Details222.storage = storage
 
