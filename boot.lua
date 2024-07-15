@@ -19,8 +19,8 @@
 		local addonName, Details222 = ...
 		local version, build, date, tvs = GetBuildInfo()
 
-		Details.build_counter = 12804
-		Details.alpha_build_counter = 12804 --if this is higher than the regular counter, use it instead
+		Details.build_counter = 12805
+		Details.alpha_build_counter = 12805 --if this is higher than the regular counter, use it instead
 		Details.dont_open_news = true
 		Details.game_version = version
 		Details.userversion = version .. " " .. Details.build_counter
@@ -76,6 +76,8 @@
 			DamageSpellsCache = {}
 		}
 
+		Details222.StartUp = {}
+
 		Details222.Unknown = _G["UNKNOWN"]
 
 		--namespace color
@@ -126,7 +128,12 @@
 		Details222.DamageSpells = {}
 		--namespace for texture
 		Details222.Textures = {}
-		Details222.Debug = {}
+
+		Details222.Debug = {
+			DebugPets = false,
+			DebugPlayerPets = false,
+		}
+
 		Details222.Tvs = tvs
 		--namespace for pet
 		Details222.Pets = {}
