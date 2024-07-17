@@ -579,13 +579,23 @@ function Details222.Combat.AddCombat(combatToBeAdded)
 
 	--is the wipe counter saved in the details database?
 	if (IsInRaid() and Details.zone_type == "raid") then --filter only for raids
-		local bRunOkay2, result = getAmountOfSegmentsInThisBoss(combatToBeAdded)
+		local bRunOkay2, result = pcall(getAmountOfSegmentsInThisBoss, combatToBeAdded)
 		if (not bRunOkay2) then
 			Details:Msg("bRunOkay2 Error > failed to get amount of segments in this boss > ", result)
 		else
 			local segmentRemoveResult = ""
+			if (type(result) ~= "number") then
+				Details:Msg("result of bRunOkay2 isn't a number | result: ", result, type(result))
+			end
+
 			local bRunOkay3, errorText3 = pcall(function()
 				local amountOfSegmentsInThisBoss = result
+
+				if (not Details.segments_amount_boss_wipes) then
+					Details:Msg("Details.segments_amount_boss_wipes isn't a number, issue with profile? ", type(Details.segments_amount_boss_wipes))
+					Details:Msg("on default profile:", Details.default_profile.segments_amount_boss_wipes)
+				end
+
 				if (amountOfSegmentsInThisBoss > Details.segments_amount_boss_wipes) then
 					---@type combat[]
 					local allSegmentsWithThisBoss = {}
