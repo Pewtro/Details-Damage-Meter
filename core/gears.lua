@@ -790,6 +790,11 @@ Details222.Parser.EventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 Details222.Parser.EventFrame:SetScript("OnEvent", function(self, event, ...)
 	local instanceName, isntanceType = GetInstanceInfo()
 
+	if (isntanceType == "pvp" or isntanceType == "arena") then
+		Details222.parser_frame:SetScript("OnEvent", Details222.Parser.OnParserEventPVP)
+		return
+	end
+
 	if (isntanceType ~= "none") then
 		if (Details222.parser_frame:GetScript("OnEvent") ~= Details222.Parser.OnParserEvent) then
 			Details222.parser_frame:SetScript("OnEvent", Details222.Parser.OnParserEvent)
@@ -848,11 +853,12 @@ function detailsEnterInCombatListener:OnEvent()
 	end
 end
 
-
 function Details222.Parser.GetState()
 	local parserEngine = Details222.parser_frame:GetScript("OnEvent")
 	if (parserEngine == Details222.Parser.OnParserEvent) then
 		return "STATE_REGULAR"
+	elseif (parserEngine == Details222.Parser.OnParserEventPVP) then
+		return "STATE_PVP"
 	elseif (parserEngine == Details222.Parser.OnParserEventOutOfCombat) then
 		return "STATE_RESTRICTED"
 	end
@@ -1954,7 +1960,7 @@ function Details.Database.StoreEncounter(combat)
 			dps_best_raid = 0,
 			dps_best_raid_when = 0
 		}
-		print(4)
+
 		---@type details_bosskillinfo
 		local bossData = totalkillsTable[encounterId][diffName]
 		---@type combattime
@@ -1991,7 +1997,7 @@ function Details.Database.StoreEncounter(combat)
 			bossData.dps_best_raid_when = time()
 		end
 	end
-	print(5, diffName)
+	
 	--check for heroic and mythic
 	if (Details222.storage.IsDebug or Details222.storage.DiffNamesHash[diffName]) then
 		--check the guild name
@@ -2040,8 +2046,6 @@ function Details.Database.StoreEncounter(combat)
 		local damageContainer = combat:GetContainer(DETAILS_ATTRIBUTE_DAMAGE)
 		local healingContainer = combat:GetContainer(DETAILS_ATTRIBUTE_HEAL)
 
-		print(6, diffName)
-
 		for i = 1, GetNumGroupMembers() do
 			local role = UnitGroupRolesAssigned(cachedRaidUnitIds[i])
 
@@ -2082,8 +2086,6 @@ function Details.Database.StoreEncounter(combat)
 				end
 			end
 		end
-
-		print(7, diffName)
 
 		--add the encounter data
 		tinsert(allEncountersStored, combatResultData)
