@@ -427,6 +427,13 @@
 			[424094] = 414532,
 
 			[228649] = 100784, --monk blackout kick
+
+			[436304] = 439843, --frost dk reaper's mark
+			[439594] = 393843, --frost dk reaper's mark
+			[66198] = 222024, --frost dk obliterate offhand
+			[66196] = 222026, --frost dk frost strike offhand
+			[383312] = 383313, --frost dk abom limb
+			[441424] = 441426, --frost dk exterminate
 		}
 
 		--all totem
@@ -2366,6 +2373,7 @@
 		[86273] = true, -- Illuminated Healing
 		[114908] = true, --Spirit Shell
 		[152118] = true, --Clarity of Will
+        [447134] = true, --Ravenous Scarab
 	}
 
 	function parser:heal_denied(token, time, sourceSerial, sourceName, sourceFlags, targetSerial, targetName, targetFlags, targetFlags2, spellIdAbsorb, spellNameAbsorb, spellSchoolAbsorb, serialHealer, nameHealer, flagsHealer, flags2Healer, spellIdHeal, spellNameHeal, typeHeal, amountDenied)
